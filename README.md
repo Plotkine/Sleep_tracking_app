@@ -4,6 +4,13 @@ Keep a diary of how you sleep, and find out what actually changes how you feel.
 
 Every morning you record when you went to bed, when you fell asleep and when you woke up. Every evening you say how your day went. After a few weeks the app tells you what is really linked to your good days — going to bed earlier, sleeping longer, keeping a particular habit — based on **your** nights, not on general advice.
 
+<p align="center">
+  <img src="docs/screenshots/summary.png" width="160" alt="Dashboard">
+  <img src="docs/screenshots/entry.png"   width="160" alt="Recording a night">
+  <img src="docs/screenshots/habits.png"  width="160" alt="Goals and habits">
+</p>
+<p align="center"><em>Dashboard · Recording a night · Goals and habits — each shown in detail below.</em></p>
+
 It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
 > **⚠️ Still in testing.** This is a personal project under active development, not a finished product. Expect rough edges and expect things to change. Please **export your data from time to time** (Settings tab) — a future version may not be able to read what an older one saved.
@@ -25,7 +32,6 @@ Recording also has an effect of its own: it turns vague impressions into somethi
 And, crucially, **against the habits you define yourself**. You add the ones you care about — no screens before bed, exercise, no late coffee, whatever you are trying to hold — you tick them off each day, and you say whether each one should affect the night that follows or the one after. The app then computes a separate correlation for every habit and ranks them by strength, so you can see which of your own rules actually make a difference for you, and which make none.
 
 **What it is not.** It follows the structure of the [Réseau Morphée](https://reseau-morphee.fr/) sleep diary. It is a diary and a mirror — not a diagnosis, not a therapy, and no substitute for a doctor. Correlation is not causation, and a few dozen nights is a small sample: the app shows the number of pairs behind every figure for that reason. If your sleep worries you, take the diary to a professional: that is exactly what it is good for.
-
 
 ## Try it
 
