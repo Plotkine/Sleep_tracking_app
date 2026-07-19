@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Bleu principal de l'app : l'icône adaptative doit s'accorder au croissant
+         du premier plan, pas rester sur le blanc du gabarit Capacitor. -->
+    <color name="ic_launcher_background">#3D5A80</color>
+</resources>

@@ -1,0 +1,12 @@
+{
+  "appId": "be.plotkine.agendasommeil",
+  "appName": "Agenda du Sommeil",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false
+  },
+  "server": {
+    "androidScheme": "http",
+    "hostname": "localhost"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "agenda-sommeil-android",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Empaquetage Android (Capacitor) de l'Agenda du Sommeil. Ne contient aucun code applicatif : le frontend est copié depuis ../frontend par le script sync-www.",
+  "scripts": {
+    "sync-www": "node scripts/sync-www.js",
+    "sync": "npm run sync-www && cap sync android",
+    "open": "cap open android",
+    "build:apk": "cd android && ./gradlew assembleDebug"
+  },
+  "dependencies": {
+    "@capacitor/android": "^6.1.2",
+    "@capacitor/core": "^6.1.2"
+  },
+  "devDependencies": {
+    "@capacitor/cli": "^6.1.2"
+  }
+}
