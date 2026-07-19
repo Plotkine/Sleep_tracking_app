@@ -5,11 +5,12 @@ Keep a diary of how you sleep, and find out what actually changes how you feel.
 Every morning you record when you went to bed, when you fell asleep and when you woke up. Every evening you say how your day went. After a few weeks the app tells you what is really linked to your good days — going to bed earlier, sleeping longer, keeping a particular habit — based on **your** nights, not on general advice.
 
 <p align="center">
-  <img src="docs/screenshots/thumb-summary.png" width="170" alt="Dashboard">
-  <img src="docs/screenshots/thumb-entry.png"   width="170" alt="Recording a night">
-  <img src="docs/screenshots/thumb-habits.png"  width="170" alt="Goals and habits">
+  <img src="docs/screenshots/thumb-summary.png"    width="128" alt="Dashboard">
+  <img src="docs/screenshots/thumb-entry.png"      width="128" alt="Recording a night">
+  <img src="docs/screenshots/thumb-statistics.png" width="128" alt="Statistics">
+  <img src="docs/screenshots/thumb-habits.png"     width="128" alt="Goals and habits">
 </p>
-<p align="center"><em>Dashboard · Recording a night · Goals and habits</em></p>
+<p align="center"><em>Dashboard · Recording a night · Statistics · Goals and habits</em></p>
 
 It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
