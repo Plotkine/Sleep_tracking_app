@@ -124,7 +124,7 @@ function renderTL(e, containerId, opts = {}) {
     const hour = (20 + h) % 24;
     const major = h % 4 === 0;
     labels += `<div style="position:absolute;left:${pct(h/24)};transform:translateX(-50%);` +
-      `font-size:${major?'0.60':'0.50'}rem;color:var(--muted);font-weight:${major?'600':'400'}">${hour}h</div>`;
+      `font-size:${major?'0.60':'0.50'}rem;color:var(--muted);font-weight:${major?'600':'400'}">${fmtHourTick(hour)}</div>`;
   }
 
   el.innerHTML = `

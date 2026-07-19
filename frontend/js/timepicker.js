@@ -182,7 +182,7 @@ const _dqpDefs = {};
 function initDqp(key = 'dqp', def = { hId: 'f-quick-h', mId: 'f-quick-m', onPick: () => updatePreview() }) {
   _dqpDefs[key] = def;
   const hours = Array.from({length:15},(_,h)=>
-    `<button type="button" class="tp-h-btn" data-h="${h}" onclick="dqpHour(${h},'${key}')">${h}h</button>`
+    `<button type="button" class="tp-h-btn" data-h="${h}" onclick="dqpHour(${h},'${key}')">${fmtHourTick(h)}</button>`
   ).join('');
   const mins = Array.from({length:12},(_,i)=>{
     const m=i*5;
@@ -218,8 +218,10 @@ function dqpSync(key = 'dqp') {
   const hNum = h !== '' ? parseInt(h) : null;
   const mNum = m !== '' ? parseInt(m) : null;
   if (hNum !== null || mNum !== null) {
-    const hStr = hNum !== null ? hNum + 'h' : '–h';
-    const mStr = mNum !== null && mNum > 0 ? String(mNum).padStart(2,'0') : '';
+    const sep = clockSep();
+    const hStr = hNum !== null ? hNum + sep : '–' + sep;
+    const mStr = mNum !== null && mNum > 0 ? String(mNum).padStart(2,'0')
+               : (lang === 'en' ? '00' : '');
     disp.textContent = hStr + mStr;
     disp.classList.remove('empty');
   } else {

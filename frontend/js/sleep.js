@@ -22,6 +22,10 @@ function fmtDecH(v) {
   return `${String(hh).padStart(2,'0')}${clockSep()}${String(mm).padStart(2,'0')}`;
 }
 
+// Hour tick on the 24 h ruler. French labels them "20h"; English uses the bare number,
+// as axes conventionally do — "20:00" repeated 24 times would not fit.
+function fmtHourTick(h) { return lang === 'en' ? String(h) : `${h}h`; }
+
 // A time already in storage format "HH:MM" -> the current language's notation.
 // Storage itself always stays "HH:MM": this is for display only.
 function fmtClock(t) {
@@ -76,14 +80,17 @@ function sleepDuration(e) {
   return hasAny ? Math.max(0, total * 24) : null;
 }
 
+// Durations follow the language: "7h30" / "7h" in French, "7:30" / "7:00" in English.
+// Under an hour both stay "45min": it is not an hour count, and "0:45" would read as a
+// time of day.
 function fmtH(h) {
   if (h === null) return '–';
   const totalMin = Math.round(h * 60);
   const hh = Math.floor(totalMin / 60);
   const mm = totalMin % 60;
   if (hh === 0) return `${mm}min`;
-  if (mm === 0) return `${hh}h`;
-  return `${hh}h${String(mm).padStart(2,'0')}`;
+  if (mm === 0) return lang === 'en' ? `${hh}:00` : `${hh}h`;
+  return `${hh}${clockSep()}${String(mm).padStart(2,'0')}`;
 }
 
 function fmtDate(ds) {

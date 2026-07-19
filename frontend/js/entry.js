@@ -152,7 +152,7 @@ function addNapRow(vals) {
     ${buildTimePicker('nap-s',5)}
     <span class="arr">→</span>
     ${buildTimePicker('nap-e',5)}
-    <button class="half-toggle" data-half="0" onclick="toggleHalf(this)" title="Demi-sommeil">½</button>
+    <button class="half-toggle" data-half="0" onclick="toggleHalf(this)" title="${t('tl_half')}">½</button>
     <button class="rm-btn" onclick="this.parentElement.remove();updatePreview()">×</button>
   `;
   list.appendChild(div);

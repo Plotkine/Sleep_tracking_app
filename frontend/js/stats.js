@@ -207,7 +207,7 @@ function renderStats() {
       layout: { padding: { left: 0, right: 0, top: 12 } },
       scales: {
         x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
-        y: { min: durLo, max: durHi, ticks: { stepSize: 1, callback: v => v+'h' } }
+        y: { min: durLo, max: durHi, ticks: { stepSize: 1, callback: v => fmtHourTick(v) } }
       }
     },
     plugins: [ gradientLine(durColor), refLine(tD, fmtH(tD)), dotLabels(durColor, fmtH) ]

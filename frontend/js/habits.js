@@ -233,9 +233,9 @@ function renderHabitsViz(days, targetId = 'habits-viz', allDates = []) {
     <div id="habits-viz-scroll" style="overflow-x:auto;flex:1;padding-bottom:4px">${squaresHtml}</div>
   </div>`;
   html += `<div style="display:flex;gap:14px;margin-top:10px;font-size:0.72rem;color:var(--muted)">
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#27ae60;margin-right:4px;vertical-align:middle"></span>Fait</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--muted);margin-right:4px;vertical-align:middle"></span>Non fait</span>
-    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--border);opacity:0.4;margin-right:4px;vertical-align:middle"></span>Non suivi</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:#27ae60;margin-right:4px;vertical-align:middle"></span>${t('b_done')}</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--muted);margin-right:4px;vertical-align:middle"></span>${t('b_notdone')}</span>
+    <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--border);opacity:0.4;margin-right:4px;vertical-align:middle"></span>${t('hb_untracked_lbl')}</span>
   </div>`;
   el.innerHTML = html;
   requestAnimationFrame(() => {

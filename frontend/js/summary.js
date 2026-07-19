@@ -385,9 +385,9 @@ function renderSummary() {
 
   // Legend
   const legend = `<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:0.71rem;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);align-items:center">
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#3d5a80,#3d5a80 2px,#5b8dbf 2px,#5b8dbf 4px);border-radius:2px"></span>Sommeil</span>
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#8ecae6,#8ecae6 2px,#b8daed 2px,#b8daed 4px);border-radius:2px"></span>Demi-sommeil</span>
-    <span><span class="arr">↓</span> Coucher &nbsp;<span class="arr">↑</span> Lever</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#3d5a80,#3d5a80 2px,#5b8dbf 2px,#5b8dbf 4px);border-radius:2px"></span>${t('tl_sleep')}</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#8ecae6,#8ecae6 2px,#b8daed 2px,#b8daed 4px);border-radius:2px"></span>${t('tl_half')}</span>
+    <span>${t('tl_markers')}</span>
     <span style="opacity:0.3">|</span>
     ${bandsLegendHtml(durBands(), 'square')}
     <span style="opacity:0.3">|</span>

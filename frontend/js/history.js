@@ -15,9 +15,9 @@ function renderHistory() {
   const delSvg  = `<svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"/></svg>`;
 
   const legend = `<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:0.72rem;color:var(--muted);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border);align-items:center">
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:20px;height:9px;display:inline-block;background:repeating-linear-gradient(45deg,#3d5a80,#3d5a80 2px,#5b8dbf 2px,#5b8dbf 4px);border-radius:2px"></span>Sommeil</span>
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:20px;height:9px;display:inline-block;background:repeating-linear-gradient(45deg,#8ecae6,#8ecae6 2px,#b8daed 2px,#b8daed 4px);border-radius:2px"></span>Demi-sommeil</span>
-    <span><span class="arr">↓</span> Mise au lit &nbsp;<span class="arr">↑</span> Lever</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:20px;height:9px;display:inline-block;background:repeating-linear-gradient(45deg,#3d5a80,#3d5a80 2px,#5b8dbf 2px,#5b8dbf 4px);border-radius:2px"></span>${t('tl_sleep')}</span>
+    <span style="display:flex;align-items:center;gap:4px"><span style="width:20px;height:9px;display:inline-block;background:repeating-linear-gradient(45deg,#8ecae6,#8ecae6 2px,#b8daed 2px,#b8daed 4px);border-radius:2px"></span>${t('tl_half')}</span>
+    <span>${t('tl_markers')}</span>
   </div>`;
 
   // Column widths: shared by the header, the recorded rows and the empty ones. If
@@ -78,7 +78,7 @@ function renderHistory() {
   for (let h = 0; h <= 24; h++) {
     const hour = (20 + h) % 24;
     const major = h % 4 === 0;
-    hourLbls += `<div style="position:absolute;left:${pct(h)};transform:translateX(-50%);font-size:${major?'0.58':'0.48'}rem;color:var(--muted);font-weight:${major?'600':'400'};white-space:nowrap">${hour}h</div>`;
+    hourLbls += `<div style="position:absolute;left:${pct(h)};transform:translateX(-50%);font-size:${major?'0.58':'0.48'}rem;color:var(--muted);font-weight:${major?'600':'400'};white-space:nowrap">${fmtHourTick(hour)}</div>`;
   }
   // Column names, then the hour ruler just below.
   const th = 'font-size:0.64rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0';

@@ -4,6 +4,20 @@ Keep a diary of how you sleep, and find out what actually changes how you feel.
 
 Every morning you record when you went to bed, when you fell asleep and when you woke up. Every evening you say how your day went. After a few weeks the app tells you what is really linked to your good days — going to bed earlier, sleeping longer, keeping a particular habit — based on **your** nights, not on general advice.
 
+## Why keep a sleep diary
+
+A sleep diary is not a tracking gadget. It is the standard clinical instrument for assessing insomnia, and it is the entry point to the treatment that works best over time.
+
+**For chronic insomnia, guidelines put behavioural treatment ahead of sleeping pills.** The European Sleep Research Society, the American College of Physicians and the American Academy of Sleep Medicine all recommend **cognitive behavioural therapy for insomnia (CBT-I) as the first-line treatment in adults**, before any medication. Sleeping pills are positioned as short-term help when CBT-I is unavailable or insufficient.
+
+The reason is not that pills do not work, but *how* they work over time. Trials comparing the two find broadly similar short-term relief, and a clear divergence afterwards: the benefits of CBT-I hold once treatment stops, whereas the benefits of hypnotics fade when they are discontinued, on top of tolerance and dependence concerns with long-term use.
+
+**A diary is the raw material CBT-I runs on.** Sleep restriction and stimulus control — its two most effective components — are dosed from what the diary records. The [Consensus Sleep Diary](https://doi.org/10.5665/sleep.1642) (Carney et al., 2012) exists precisely because clinicians needed a standard form for this. Two weeks of entries are the usual basis for an assessment.
+
+Recording also has an effect of its own: it turns vague impressions into something you can look at. People routinely believe they slept far worse than they did, and a written trace is what corrects that.
+
+**What this app is, and is not.** It follows the structure of the [Réseau Morphée](https://reseau-morphee.fr/) sleep diary and computes correlations over your own data. It is a diary and a mirror — not a diagnosis, not a therapy, and no substitute for a doctor. Correlation is not causation, and a few dozen nights is a small sample. If your sleep worries you, take the diary to a professional: that is exactly what it is good for.
+
 It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
 > **⚠️ Still in testing.** This is a personal project under active development, not a finished product. Expect rough edges and expect things to change. Please **export your data from time to time** (Settings tab) — a future version may not be able to read what an older one saved.
