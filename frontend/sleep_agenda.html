@@ -268,13 +268,13 @@
     <div class="chart-card">
       <h3 id="lbl-chart-dur">Durée de sommeil par nuit</h3>
       <div id="dur-goal" class="chart-goal"></div>
-      <div id="c-dur-wrap" class="chart-scroll"><div class="chart-inner"><canvas id="c-dur"></canvas></div></div>
+      <div class="chart-pane"><div id="c-dur-wrap" class="chart-scroll" onscroll="updateChartNav('c-dur-wrap')"><div class="chart-inner"><canvas id="c-dur"></canvas></div></div><button type="button" class="chart-nav chart-nav-left" onclick="scrollChart('c-dur-wrap',-1)" aria-label="←">‹</button><button type="button" class="chart-nav chart-nav-right" onclick="scrollChart('c-dur-wrap',1)" aria-label="→">›</button></div>
       <div id="dur-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem"></div>
     </div>
     <div class="chart-card">
       <h3 id="lbl-chart-sleep">Heure d'endormissement</h3>
       <div id="sleep-goal" class="chart-goal"></div>
-      <div id="c-sleep-wrap" class="chart-scroll"><div class="chart-inner"><canvas id="c-sleep"></canvas></div></div>
+      <div class="chart-pane"><div id="c-sleep-wrap" class="chart-scroll" onscroll="updateChartNav('c-sleep-wrap')"><div class="chart-inner"><canvas id="c-sleep"></canvas></div></div><button type="button" class="chart-nav chart-nav-left" onclick="scrollChart('c-sleep-wrap',-1)" aria-label="←">‹</button><button type="button" class="chart-nav chart-nav-right" onclick="scrollChart('c-sleep-wrap',1)" aria-label="→">›</button></div>
       <div id="sleep-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem"></div>
     </div>
   </div>

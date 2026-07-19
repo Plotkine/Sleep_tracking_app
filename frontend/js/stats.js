@@ -1,4 +1,25 @@
 // Statistics tab: average cards, Form/Habits squares and the two Chart.js charts.
+
+// Horizontal paging of a chart that overflows. Global: the arrows carry inline
+// onclick handlers, like the rest of the markup.
+function scrollChart(wrapId, dir) {
+  const w = document.getElementById(wrapId);
+  if (!w) return;
+  w.scrollLeft += dir * w.clientWidth * 0.9;   // 0.9: keeps one column of overlap as a landmark
+}
+
+// Shows an arrow only on the side where data remains.
+function updateChartNav(wrapId) {
+  const w = document.getElementById(wrapId);
+  const pane = w && w.parentElement;
+  if (!pane) return;
+  const left  = pane.querySelector('.chart-nav-left');
+  const right = pane.querySelector('.chart-nav-right');
+  const max = w.scrollWidth - w.clientWidth;
+  if (left)  left.style.display  = w.scrollLeft > 4 ? 'block' : 'none';
+  if (right) right.style.display = w.scrollLeft < max - 4 ? 'block' : 'none';
+}
+
 function renderStats() {
   const sorted = [...entries].sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
 
@@ -184,6 +205,16 @@ function renderStats() {
     if (!inner) return;
     const needed = allDates.length * MIN_PX_PER_POINT;
     inner.style.width = needed > wrap.clientWidth ? needed + 'px' : '100%';
+    // On ouvre sur les nuits les plus récentes, à droite : c'est ce qu'on vient
+    // consulter. Sans `auto`, le scroll-behavior:smooth du CSS animerait ce
+    // positionnement initial.
+    requestAnimationFrame(() => {
+      const prev = wrap.style.scrollBehavior;
+      wrap.style.scrollBehavior = 'auto';
+      wrap.scrollLeft = wrap.scrollWidth;
+      wrap.style.scrollBehavior = prev;
+      updateChartNav(wrapId);
+    });
   }
 
   const durData = days.map(e => { if(!e) return null; const d=sleepDuration(e); return d!==null?Math.round(d*100)/100:null; });
