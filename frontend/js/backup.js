@@ -26,9 +26,36 @@ function backupFileName() {
 // Téléchargement via un Blob. Dans la WebView Android le clic programmatique sur
 // un lien `download` fonctionne, mais si l'environnement le refuse on bascule sur
 // le partage natif, puis en dernier recours sur un affichage copiable.
+// Android : la WebView n'expose pas toujours le partage de fichiers de `navigator.share`,
+// et le repli `<a download>` écrit silencieusement dans Téléchargements — d'où l'export
+// « réussi » sans savoir où. Les plugins natifs ouvrent la feuille de partage système,
+// qui propose « Enregistrer dans Fichiers » et donc le choix du dossier.
+// Le fichier est d'abord écrit dans le cache : c'est une copie temporaire, la
+// destination réelle est celle que choisit l'utilisateur.
+async function exportViaNative(json, name) {
+  const P = window.Capacitor && window.Capacitor.Plugins;
+  if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return false;
+  if (!P || !P.Filesystem || !P.Share) return false;
+  const { uri } = await P.Filesystem.writeFile({
+    path: name, data: json, directory: 'CACHE', encoding: 'utf8',
+  });
+  await P.Share.share({ title: name, files: [uri], dialogTitle: t('bk_choose') });
+  return true;
+}
+
 async function exportData() {
   const json = JSON.stringify(buildBackup(), null, 2);
   const name = backupFileName();
+
+  try {
+    if (await exportViaNative(json, name)) { showBackupStatus(t('bk_exported')); return; }
+  } catch (err) {
+    // Partage refermé sans choisir : ce n'est pas une erreur, et surtout pas un échec
+    // dont il faudrait avertir.
+    const m = (err && (err.message || err)) + '';
+    if (/cancel|abort|dismiss/i.test(m)) return;
+    // Sinon on laisse les replis ci-dessous tenter leur chance.
+  }
 
   // Partage natif : sur mobile c'est le seul chemin qui laisse choisir la destination.
   if (navigator.canShare && navigator.share) {
@@ -53,7 +80,9 @@ async function exportData() {
     a.remove();
     // Révocation différée : Chrome annule le téléchargement si l'URL meurt trop tôt.
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-    showBackupStatus(t('bk_exported'));
+    // Ce chemin ne laisse pas choisir : on nomme au moins le fichier et son dossier,
+    // sinon l'export paraît avoir disparu.
+    showBackupStatus(t('bk_exported_dl')(name));
   } catch {
     showBackupFallback(json);
   }
