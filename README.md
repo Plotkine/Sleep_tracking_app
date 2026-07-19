@@ -50,8 +50,6 @@ It then appears as **Agenda du Sommeil** in your app list, and starts with an em
 
 ### In a browser
 
-You need Python, which is already installed on most Linux and macOS machines.
-
 ```bash
 git clone https://github.com/Plotkine/Sleep_tracking_app.git
 cd Sleep_tracking_app
