@@ -1,54 +1,54 @@
-# Agenda de Vigilance et de Sommeil
+# Sleep & Vigilance Diary
 
-Application de suivi du sommeil inspirée de l'[agenda du sommeil du Réseau Morphée](https://reseau-morphee.fr/), bilingue (français / anglais). Elle tourne dans un navigateur, servie par un petit serveur Python, **et** comme application Android autonome.
+A sleep-tracking app modelled on the [Réseau Morphée sleep diary](https://reseau-morphee.fr/), in French and English. It runs in a browser, served by a small Python server, **and** as a standalone Android app.
 
-Aucune dépendance réseau : Chart.js est embarqué, rien n'est envoyé nulle part. Les données restent sur la machine.
+No network dependency: Chart.js is vendored, nothing is ever sent anywhere. Your data stays on your machine.
 
-## Fonctionnalités
+## Features
 
-- **Saisie** — nuit découpée en périodes (coucher, endormissement, réveil, lever), demi-sommeil, siestes, somnolences, forme de la journée, habitudes, remarques. Un mode rapide permet de n'encoder qu'une durée totale.
-- **Tableau de bord** — mascotte commentant la forme prévue du jour, moyennes des trois derniers jours, aperçu des nuits sur une timeline 24 h.
-- **Historique** — une ligne par jour sur un axe de dates continu, les jours non encodés restant visibles.
-- **Statistiques** — durée et heure d'endormissement en nuages de points avec objectif, carrés de forme et d'habitudes, et un tableau de corrélations (Pearson) entre le sommeil et la forme.
-- **Objectifs et habitudes** — durée de sommeil et heure d'endormissement visées, habitudes suivies avec leur effet sur la nuit même ou la suivante.
-- **Options** — thème clair/sombre, langue, export et import de la totalité des données dans un fichier JSON.
+- **Entry** — a night split into periods (bedtime, falling asleep, waking, getting up), half-sleep, naps, drowsiness, day form, habits and notes. A quick mode records a total duration only.
+- **Dashboard** — a meerkat commenting on the day's predicted form, three-day averages, and a preview of recent nights on a 24 h timeline.
+- **History** — one row per day on a continuous date axis, so unrecorded days stay visible instead of silently vanishing.
+- **Statistics** — sleep duration and onset time as dot charts with a target line, form and habit squares, and a Pearson correlation table linking sleep to how you felt.
+- **Goals and habits** — target sleep duration and bedtime, plus tracked habits marked as affecting the same night or the next one.
+- **Settings** — light/dark theme, language, and export/import of everything to a single JSON file.
 
-## Lancer l'application web
+## Running the web app
 
 ```bash
 python3 sleep_server.py
 ```
 
-Ouvre `http://localhost:8742`. Le dossier `data/` est créé automatiquement au premier démarrage.
+Opens `http://localhost:8742`. The `data/` folder is created on first launch.
 
-## Application Android
+## Android app
 
-Un APK de développement est disponible dans les [releases](https://github.com/Plotkine/Sleep_tracking_app/releases). Pour le reconstruire (JDK 17 et Android SDK 34 requis) :
+A debug APK is available under [releases](https://github.com/Plotkine/Sleep_tracking_app/releases). To rebuild it (JDK 17 and Android SDK 34 required):
 
 ```bash
 cd android-app
 npm install
-npm run sync        # copie frontend/ dans www/
+npm run sync        # copies frontend/ into www/
 npm run build:apk
 ```
 
-## Vos données
+## Your data
 
-`data/` **n'est pas versionné** : il contient des données de santé personnelles. Le serveur y écrit `sleep_data.json` et `habits.json`, et les recrée vides s'ils manquent.
+`data/` is **not versioned** — it holds personal health data. The server writes `sleep_data.json` and `habits.json` there, and recreates them empty if missing.
 
-Le web et l'application Android ne partagent aucun stockage : l'application Android range tout dans le `localStorage` de sa WebView. L'export/import de l'onglet Options est le seul pont entre les deux — le fichier produit contient les nuits, les habitudes et les objectifs.
+The web and Android versions share no storage: the Android app keeps everything in its WebView's `localStorage`. Export/import in the Settings tab is the only bridge between them — the file carries nights, habits and targets.
 
-## Organisation du code
+## Code layout
 
-| Chemin | Rôle |
+| Path | Role |
 |---|---|
-| `sleep_server.py` | Serveur HTTP minimal : pages, fichiers statiques, API JSON |
-| `frontend/sleep_agenda.html` | Balisage : navigation et conteneurs d'onglets |
-| `frontend/css/styles.css` | Toutes les feuilles de style |
-| `frontend/js/*.js` | L'application, découpée par responsabilité |
-| `android-app/` | Empaquetage Capacitor, sans code applicatif propre |
+| `sleep_server.py` | Minimal HTTP server: pages, static files, JSON API |
+| `frontend/sleep_agenda.html` | Markup: navigation and tab containers |
+| `frontend/css/styles.css` | All styles |
+| `frontend/js/*.js` | The app, split by responsibility |
+| `android-app/` | Capacitor packaging, with no app code of its own |
 
-Les scripts JavaScript sont des scripts classiques, pas des modules ES : les fonctions de premier niveau restent globales, ce dont dépendent les gestionnaires `onclick` du balisage.
+The JavaScript files are classic scripts, not ES modules: top-level functions stay global, which is what the markup's `onclick` handlers rely on.
 
 ## Licence
 
