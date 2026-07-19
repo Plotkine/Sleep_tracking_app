@@ -50,6 +50,9 @@ const S = {
     corr_habits_kept:"Nombre d'habitudes respectées",
     corr_dur_same:'Durée nuit même jour', corr_dur_next:'Durée nuit lendemain',
     b_done:'Faite', b_notdone:'Non faite', hb_untracked_lbl:'Non suivie',
+    hb_impact:'Impact nuit', hb_new_ph:'Nouvelle habitude…', act_rename:'Renommer',
+    hb_same:'J', hb_next:'J+1',
+    d_prev:'Jour précédent', d_next:'Jour suivant',
     b_lt25:'< 25 %', b_25_75:'25 – 75 %', b_gt75:'> 75 %',
     f_longer:'allonger tes nuits', f_shorter:'éviter les nuits trop longues',
     f_longer2:'allonger tes nuits — leur effet se fait sentir deux jours plus tard',
@@ -168,6 +171,9 @@ const S = {
     corr_habits_kept:'Habits kept',
     corr_dur_same:'Same-day night duration', corr_dur_next:'Next-day night duration',
     b_done:'Done', b_notdone:'Not done', hb_untracked_lbl:'Not tracked',
+    hb_impact:'Affects night', hb_new_ph:'New habit…', act_rename:'Rename',
+    hb_same:'Same', hb_next:'Next',
+    d_prev:'Previous day', d_next:'Next day',
     b_lt25:'< 25%', b_25_75:'25 – 75%', b_gt75:'> 75%',
     f_longer:'making your nights longer', f_shorter:'avoiding overly long nights',
     f_longer2:'making your nights longer — the effect shows up two days later',
@@ -274,9 +280,11 @@ function applyLang() {
   };
   Object.entries(ids).forEach(([id,k])=>{ const el=document.getElementById(id); if(el) el.textContent=t(k); });
   document.getElementById('f-notes').placeholder = t('notes_ph');
+  document.getElementById('new-habit-input').placeholder = t('hb_new_ph');
   const ds = getDateValue();
   if (ds) setDateValue(ds);
   document.getElementById('cal-btn-lbl').title = t('cal_title');
+  document.querySelectorAll('.nav-day-btn').forEach((b, k) => { b.title = k === 0 ? t('d_prev') : t('d_next'); });
   const dark = document.documentElement.classList.contains('dark');
   document.getElementById('theme-toggle').textContent = dark ? t('theme_dark') : t('theme_light');
   // Re-render dynamic content

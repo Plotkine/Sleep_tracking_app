@@ -59,7 +59,7 @@
           <input type="hidden" id="f-month">
           <input type="hidden" id="f-year">
           <div style="display:flex;align-items:center;gap:6px">
-            <button class="nav-day-btn" onclick="prevDay()" title="Jour précédent">◀</button>
+            <button class="nav-day-btn" onclick="prevDay()" title="">◀</button>
             <div class="cal-wrap" style="flex:1">
               <button onclick="toggleCalendar(event)" id="cal-btn-lbl" style="width:100%;display:flex;align-items:center;justify-content:space-between;padding:8px 12px;border:1.5px solid var(--border);border-radius:6px;background:var(--card);cursor:pointer;transition:border-color 0.15s;font-family:inherit">
                 <span id="date-display" style="font-size:0.9rem;font-weight:600;color:var(--text)">–</span>
@@ -75,7 +75,7 @@
                 <div id="cal-days" class="cal-days"></div>
               </div>
             </div>
-            <button class="nav-day-btn" onclick="nextDay()" title="Jour suivant">▶</button>
+            <button class="nav-day-btn" onclick="nextDay()" title="">▶</button>
           </div>
         </div>
       </div>
@@ -233,7 +233,7 @@
       <h2>⚙ <span id="lbl-habits-card">Habitudes</span></h2>
       <div id="habits-manage-list"></div>
       <div class="habit-add-row">
-        <input type="text" id="new-habit-input" class="habit-add-input" placeholder="Nouvelle habitude…" onkeydown="if(event.key==='Enter')addHabit()">
+        <input type="text" id="new-habit-input" class="habit-add-input" placeholder="" onkeydown="if(event.key==='Enter')addHabit()">
         <button class="habit-add-btn" id="btn-add-habit" onclick="addHabit()">+ Ajouter</button>
       </div>
     </div>

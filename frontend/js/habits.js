@@ -56,12 +56,12 @@ function _makeHabitRow(h) {
     <span style="cursor:grab;color:var(--muted);padding-right:8px;font-size:1.1rem;user-select:none;flex-shrink:0">⠿</span>
     <span class="habit-name-lbl" style="flex:1;font-size:0.85rem;color:var(--text)">${h.name}</span>
     <input class="habit-name-inp" style="display:none;flex:1;font-size:0.85rem;padding:2px 6px;border:1.5px solid var(--primary-light);border-radius:4px;background:var(--card);color:var(--text);font-family:inherit" value="${h.name}">
-    <button class="edit-btn habit-rename-btn" title="Renommer">${pencilSvg}</button>
+    <button class="edit-btn habit-rename-btn" title="${t('act_rename')}">${pencilSvg}</button>
     <label style="display:flex;align-items:center;gap:4px;font-size:0.72rem;color:var(--muted);flex-shrink:0;margin:0 8px">
-      Impact nuit
+      ${t('hb_impact')}
       <select class="habit-impact-sel" style="font-size:0.72rem;border:1px solid var(--border);border-radius:4px;padding:1px 4px;background:var(--card);color:var(--text);cursor:pointer">
-        <option value="next" ${(h.sleepImpact||'next')==='next'?'selected':''}>J+1</option>
-        <option value="same" ${h.sleepImpact==='same'?'selected':''}>J</option>
+        <option value="next" ${(h.sleepImpact||'next')==='next'?'selected':''}>${t('hb_next')}</option>
+        <option value="same" ${h.sleepImpact==='same'?'selected':''}>${t('hb_same')}</option>
       </select>
     </label>
     <button class="del-btn" onclick="deleteHabit('${h.id}')" title="${t('act_delete')}">${trashSvg}</button>`;
