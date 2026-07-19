@@ -67,4 +67,7 @@ The JavaScript files are classic scripts, not ES modules: top-level functions st
 
 ## Licence
 
-MIT
+[MIT](LICENSE) — Copyright (c) 2026 Plotkine.
+
+You may use, modify and redistribute this code, including in closed-source
+products, as long as the copyright notice and the licence text travel with it.
