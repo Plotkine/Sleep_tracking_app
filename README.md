@@ -1,32 +1,31 @@
 # Sleep & Vigilance Diary
 
-A sleep-tracking app modelled on the [Réseau Morphée sleep diary](https://reseau-morphee.fr/), in French and English. The same app runs **on an Android phone** and **in a browser**.
+Keep a diary of how you sleep, and find out what actually changes how you feel.
 
-No network dependency: Chart.js is vendored, nothing is ever sent anywhere, and your data never leaves the device.
+Every morning you record when you went to bed, when you fell asleep and when you woke up. Every evening you say how your day went. After a few weeks the app tells you what is really linked to your good days — going to bed earlier, sleeping longer, keeping a particular habit — based on **your** nights, not on general advice.
 
-> **⚠️ This project is still in testing.**
-> It is a personal project under active development, not a finished product. Expect rough edges, and expect things to change. The Android build is a **debug** build — it is not on the Play Store and is not signed for distribution. There is no guarantee that data recorded today survives a future version, so **export your data regularly** (Settings tab) if you rely on it.
+It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
-## Trying it out
+> **⚠️ Still in testing.** This is a personal project under active development, not a finished product. Expect rough edges and expect things to change. Please **export your data from time to time** (Settings tab) — a future version may not be able to read what an older one saved.
 
-Two ways, independent of each other. Neither requires an account, and both work offline.
+## Try it
 
-### On your phone — download the APK
+Two ways, independent of each other. Pick either.
 
-Nothing to compile, no toolchain to install.
+### On your phone
 
-1. From the phone, open [releases](https://github.com/Plotkine/Sleep_tracking_app/releases) and download `agenda-sommeil-v1.0-debug.apk`. (Downloading on a computer and transferring the file works too.)
+Nothing to install beyond the app itself.
+
+1. From your phone, open [releases](https://github.com/Plotkine/Sleep_tracking_app/releases) and download `agenda-sommeil-v1.0-debug.apk`.
 2. Tap the downloaded file.
-3. Android blocks the first attempt — *"your phone is not allowed to install unknown apps from this source"*. Tap **Settings** in that dialog, allow installation for the app you used (Files, Chrome, Gmail…), then tap the APK again.
-4. Play Protect may warn you as well, since the app is not signed by a Play Store key: **More details → Install anyway**.
+3. Android will refuse the first time and say it is *not allowed to install unknown apps from this source*. Tap **Settings** in that message, allow it for the app you downloaded with, then tap the file again.
+4. You may also see a Play Protect warning, because the app does not come from the Play Store: **More details → Install anyway**.
 
-It appears in your launcher as **Agenda du Sommeil**, works fully offline, and starts with an empty diary.
+It then appears as **Agenda du Sommeil** in your app list, and starts with an empty diary.
 
-Because this is a debug build, a future signed release cannot update it in place — Android refuses to update an app whose signing certificate changed. You would have to uninstall first, which wipes its data. Export beforehand.
+### In a browser
 
-### In a browser — run the Python server
-
-Python 3 is all you need; there are no dependencies to install.
+You need Python, which is already installed on most Linux and macOS machines.
 
 ```bash
 git clone https://github.com/Plotkine/Sleep_tracking_app.git
@@ -34,37 +33,56 @@ cd Sleep_tracking_app
 python3 sleep_server.py
 ```
 
-It opens `http://localhost:8742` automatically. The `data/` folder is created on first launch. Stop with `Ctrl+C`.
+Your browser opens on the app. Press `Ctrl+C` in the terminal to stop it.
 
-### Moving data between the two
+### Using both
 
-The phone and the browser **share no storage**: the Android app keeps everything in its WebView's `localStorage`, the web version in `data/*.json`. The **Export / Import** buttons in the Settings tab are the only bridge — the file carries nights, habits and targets.
+The phone and the browser keep **separate diaries** — they do not sync. To move your nights from one to the other, use **Export** in the Settings tab, transfer the file, then **Import** on the other side. That file holds everything: your nights, your habits and your goals.
 
-## Features
+## What you can do with it
 
-- **Entry** — a night split into periods (bedtime, falling asleep, waking, getting up), half-sleep, naps, drowsiness, day form, habits and notes. A quick mode records a total duration only.
-- **Dashboard** — a meerkat commenting on the day's predicted form, three-day averages, and a preview of recent nights on a 24 h timeline.
-- **History** — one row per day on a continuous date axis, so unrecorded days stay visible instead of silently vanishing.
-- **Statistics** — sleep duration and onset time as dot charts with a target line, form and habit squares, and a Pearson correlation table linking sleep to how you felt.
-- **Goals and habits** — target sleep duration and bedtime, plus tracked habits marked as affecting the same night or the next one.
-- **Settings** — light/dark theme, language, and export/import of everything to a single JSON file.
+*The screenshots below use made-up data.*
+
+### See where you stand
+
+A short summary of the last three days, and a plain sentence telling you how your day is likely to go, given how you slept — followed by whether that matched how you actually felt. Underneath, your nights drawn on a 24-hour strip, so you can see at a glance whether you slept in one block or woke up in the middle.
+
+![Dashboard](docs/screenshots/summary.png)
+
+### Record a night
+
+Enter the evening and morning times — when you got into bed, when you think you fell asleep, when you woke, when you got up. Add naps, moments when you felt sleepy during the day, how your day went, which of your habits you kept, and a free note. A preview updates as you type. In a hurry, a quick mode lets you record only a total duration.
+
+![Entry](docs/screenshots/entry.png)
+
+### Look back
+
+Every night since you started, one row per day, drawn to scale. Days you did not record stay visible as empty rows, so gaps are obvious rather than hidden.
+
+![History](docs/screenshots/history.png)
+
+### Understand what affects you
+
+Your sleep duration and bedtime plotted night after night against the goals you set, and a table showing which factors go together with your good days — the previous night's length, the average of the last few nights, what time you fell asleep, each habit you track. Strength is shown with stars, and the clearest links are explained with a small chart.
+
+![Statistics](docs/screenshots/statistics.png)
+
+### Set goals and track habits
+
+Choose a target sleep duration and bedtime; they appear as reference lines on the charts. Add the habits you want to hold — no screens before bed, exercise, no late coffee — and say whether each one affects the night that follows or the one after. The app then measures whether they actually make a difference for you.
 
 ## Your data
 
-`data/` is **not versioned** — it holds personal health data. The server writes `sleep_data.json` and `habits.json` there, and recreates them empty if missing.
+Your diary is stored **only on the device you entered it on**, in `data/` for the web version and inside the app itself on Android. `data/` is deliberately excluded from this repository: it is personal health information.
 
-## Rebuilding the Android app
+Export and import are the only way to move or back up your diary, and the only bridge between phone and browser.
 
-Only needed if you change the code. Requires JDK 17 and Android SDK 34:
+## For developers
 
-```bash
-cd android-app
-npm install
-npm run sync        # copies frontend/ into www/
-npm run build:apk   # -> android-app/dist/agenda-sommeil-debug.apk
-```
+<details>
+<summary>Technical notes</summary>
 
-## Code layout
+No build step, no bundler, no runtime dependency — Chart.js is vendored so the Android app works offline. The frontend is plain HTML, CSS and classic JavaScript files (not ES modules: top-level functions stay global, which the markup's `onclick` handlers rely on).
 
 | Path | Role |
 |---|---|
@@ -74,7 +92,20 @@ npm run build:apk   # -> android-app/dist/agenda-sommeil-debug.apk
 | `frontend/js/*.js` | The app, split by responsibility |
 | `android-app/` | Capacitor packaging, with no app code of its own |
 
-The JavaScript files are classic scripts, not ES modules: top-level functions stay global, which is what the markup's `onclick` handlers rely on.
+The web version stores its data in `data/*.json` through the Python server; the Android build has no server and falls back to the WebView's `localStorage`. The frontend detects which one it is running under at startup.
+
+Rebuilding the Android app requires JDK 17 and Android SDK 34:
+
+```bash
+cd android-app
+npm install
+npm run sync        # copies frontend/ into www/
+npm run build:apk   # -> android-app/dist/agenda-sommeil-debug.apk
+```
+
+The APK is a **debug** build, signed with the Android debug key. It installs and never expires, but it cannot be published to the Play Store, and a future signed build cannot update it in place — Android refuses to update an app whose signing certificate changed.
+
+</details>
 
 ## Licence
 
