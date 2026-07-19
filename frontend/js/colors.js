@@ -1,20 +1,19 @@
-// Couleurs : palette d'appréciation et bandes des échelles (durée, endormissement).
-// Dépend de state.js (objectifs) et sleep.js (formatage) au moment de l'appel, pas au chargement.
+// Colours: appreciation palette and the scale bands (duration, sleep onset).
+// Depends on state.js (targets) and sleep.js (formatting) at call time, not at load.
 const RCOLOR = {TB:'#27ae60',B:'#82c341',Moy:'#f7e08a',M:'#e67e22',TM:'#e74c3c'};
 
-// ---- Palette d'appréciation : LA source unique de couleur de toute l'app ----
-// Aucun barème ne doit être redéfini ailleurs, même « juste pour cet encart » :
-// c'est ainsi qu'une même nuit finissait orange dans l'historique et vert clair
-// dans le graphe des durées.
+// ---- Appreciation palette: THE single source of colour for the whole app ----
+// No scale may be redefined elsewhere, not even "just for this card": that is how
+// the same night ended up orange in History and light green in the duration chart.
 const SCALE = { good: '#27ae60', ok: '#a8d44a', poor: '#e67e22', bad: '#e74c3c' };
 
-// Chaque échelle est décrite par ses bandes : couleur, libellé et test.
+// Each scale is described by its bands: colour, label and test.
 // Les tests sont **mutuellement exclusifs et exhaustifs**, ce qui permet de s'en
 // servir aussi bien pour colorer une valeur que pour regrouper des points par
 // tranche, sans jamais compter une valeur deux fois. Ordre : de la meilleure
 // bande à la pire.
 
-// Durée de sommeil — toujours relative à l'objectif, partout.
+// Sleep duration — always relative to the target, everywhere.
 // Convention [a, b[ : atteindre l'objectif pile compte comme atteint, donc vert.
 function durBands() {
   const n  = durTargetH();
@@ -27,8 +26,8 @@ function durBands() {
   ];
 }
 
-// Heure d'endormissement — écart à l'objectif.
-// Convention ]a, b] : la borne haute est incluse, la dernière bande est au-delà.
+// Sleep onset — distance from the target.
+// Convention ]a, b]: the upper bound is included, the last band lies beyond.
 function onsetBands() {
   const t = sleepTargetH();
   return [
@@ -40,8 +39,8 @@ function onsetBands() {
 }
 
 // `nullColor` : 'transparent' pour Chart.js, qui ne sait pas lire une var CSS.
-// Attention à ne jamais passer ces fonctions nues à .map(), qui fournirait
-// l'index en deuxième argument.
+// Never hand these functions bare to .map(), which would pass the index as the
+// second argument.
 function durColor(d, nullColor = 'var(--muted)') {
   return d == null ? nullColor : durBands().find(b => b.test(d)).c;
 }
@@ -49,19 +48,19 @@ function onsetColor(v, nullColor = 'var(--muted)') {
   return v == null ? nullColor : onsetBands().find(b => b.test(v)).c;
 }
 
-// Ratio 0–1 (part d'habitudes respectées)
+// Ratio 0–1 (share of habits kept)
 function ratioColor(v) {
   if (v == null) return 'var(--muted)';
   return v >= 0.75 ? SCALE.good : v >= 0.5 ? SCALE.ok : v >= 0.25 ? SCALE.poor : SCALE.bad;
 }
 
-// Tranches d'une analyse détaillée, engendrées par les mêmes bandes : les seuils
-// du tableau collent donc toujours aux couleurs affichées ailleurs.
+// Buckets for a detail analysis, generated from the same bands: the table's
+// thresholds therefore always match the colours shown elsewhere.
 function bucketsFrom(bands) {
   return bands.map(b => [b.label, b.test, b.c]);
 }
 
-// Légende engendrée par les bandes elles-mêmes : elle ne peut pas mentir.
+// Legend generated from the bands themselves: it cannot disagree with them.
 function bandsLegendHtml(bands, shape = 'dot') {
   const r = shape === 'dot' ? '50%' : '2px';
   return bands.map(b => `<span style="display:flex;align-items:center;gap:4px">`

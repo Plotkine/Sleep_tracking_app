@@ -99,8 +99,8 @@ function buildRG(id, key) {
     const b = document.createElement('button');
     b.className = 'rating-btn'; b.dataset.v = v; b.textContent = VNAME[v];
     b.onclick = () => {
-      // Re-cliquer sur l'option déjà choisie la retire : sans cela une forme saisie
-      // par erreur ne pouvait plus qu'être remplacée, jamais annulée.
+      // Clicking the selected option again clears it: without this, a form entered by
+      // mistake could only be replaced, never removed.
       const off = ratings[key] === v;
       ratings[key] = off ? null : v;
       el.querySelectorAll('.rating-btn').forEach(x=>x.classList.remove('sel'));
@@ -130,7 +130,7 @@ function addSleepBlock(vals) {
   `;
   list.appendChild(div);
   if (vals) {
-    // Entrées anciennes : bedtime/wakeup portaient à la fois le coucher et l'endormissement.
+    // Legacy entries: bedtime/wakeup carried both going to bed and falling asleep.
     div.querySelector('.sl-bed').value   = vals.bed || vals.bedtime || '';
     div.querySelector('.sl-start').value = vals.sleepStart || '';
     div.querySelector('.sl-end').value   = vals.sleepEnd || vals.wakeup || '';
@@ -373,9 +373,9 @@ function fillFormFromEntry(e) {
   updatePreview();
 }
 
-// Vide le formulaire *sans* toucher à la date affichée : on efface ce qui est saisi,
+// Empties the form *without* touching the displayed date: it clears what was typed,
 // on ne renvoie pas l'utilisateur sur un autre jour. switchMode('detailed') se charge
-// de reconstruire des listes vides, puisque editingId vient d'être remis à null.
+// rebuilding empty lists, since editingId has just been reset to null.
 function resetForm() {
   editingId = null;
   document.getElementById('f-notes').value = '';

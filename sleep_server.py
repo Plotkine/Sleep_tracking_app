@@ -15,12 +15,12 @@ PORT = 8742
 
 
 def ensure_data_files():
-    """Crée data/ et les trois fichiers vides s'ils manquent.
+    """Create data/ and the three empty files if they are missing.
 
-    `data/` est exclu du dépôt (données personnelles), donc un clone frais n'en a
-    aucune trace : sans cette initialisation le premier enregistrement échouerait,
-    `write_bytes` ne créant pas le dossier parent.
-    Un fichier existant n'est jamais touché — surtout pas écrasé.
+    `data/` is excluded from the repository (personal data), so a fresh clone has no
+    trace of it: without this initialisation the first save would fail, since
+    `write_bytes` does not create the parent directory.
+    An existing file is never touched — least of all overwritten.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
     for f in (DATA_FILE, HABITS_FILE, CATEGORIES_FILE):
@@ -64,8 +64,8 @@ class Handler(BaseHTTPRequestHandler):
             self.send_error(404)
 
     def do_POST(self):
-        # Le dossier peut avoir disparu depuis le démarrage : le recréer coûte moins
-        # cher qu'une écriture perdue.
+        # The folder may have gone since startup: recreating it costs less than a
+        # lost write.
         DATA_DIR.mkdir(parents=True, exist_ok=True)
         if self.path == '/api/entries':
             n = int(self.headers.get('Content-Length', 0))
@@ -103,10 +103,10 @@ if __name__ == '__main__':
     ensure_data_files()
     server = HTTPServer(('127.0.0.1', PORT), Handler)
     url = f'http://localhost:{PORT}'
-    print(f'Agenda du Sommeil → {url}')
-    print('Ctrl+C pour arrêter')
+    print(f'Sleep Diary → {url}')
+    print('Ctrl+C to stop')
     webbrowser.open(url)
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        print('\nArrêt.')
+        print('\nStopped.')

@@ -1,4 +1,4 @@
-// Habitudes : création/édition/ordre, et les trois rendus (Saisie, gestion, carrés).
+// Habits: create/edit/reorder, and the three renderings (Entry, management, squares).
 function renderHabitsForm(habitsDone, habitsNotDone) {
   const el = document.getElementById('habits-form-list');
   if (!el) return;
@@ -173,7 +173,7 @@ async function deleteHabit(id) {
   const hs = getHabitStates(); renderHabitsForm(hs.done, hs.notDone);
 }
 
-// Frise de la forme du jour — même grammaire visuelle que la frise des habitudes
+// Day-form strip — same visual grammar as the habits strip
 function renderFormViz(days, allDates = []) {
   const el = document.getElementById('form-viz');
   if (!el) return;
@@ -220,7 +220,7 @@ function renderHabitsViz(days, targetId = 'habits-viz', allDates = []) {
       const ds = allDates[i] || (days[i] && days[i].dateStr) || '';
       const dateLabel = ds ? new Date(ds+'T12:00:00').toLocaleDateString(t('locale'),{weekday:'short',day:'2-digit',month:'short'}) : '';
       const tip = dateLabel ? `${dateLabel} — ${v === true ? 'Fait' : v === false ? 'Non fait' : t('hb_notenc')}` : '';
-      // Fait = plein · Non fait = vide, contour net · Non suivi = vide, contour effacé
+      // Done = filled · Not done = empty, crisp outline · Not tracked = empty, faint outline
       if (v === null) return `<div class="habits-viz-sq" style="background:transparent;border:1px solid var(--border);opacity:0.3" title="${tip}"></div>`;
       if (v === true) return `<div class="habits-viz-sq" style="background:#27ae60" title="${tip}"></div>`;
       return `<div class="habits-viz-sq" style="background:transparent;border:1px solid var(--muted)" title="${tip}"></div>`;

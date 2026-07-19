@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-// Copie ../frontend vers ./www, d'où Capacitor construit l'application.
+// Copies ../frontend into ./www, from which Capacitor builds the app.
 //
-// Le code source n'est jamais modifié : la seule adaptation est le nom du fichier
-// d'entrée. Capacitor exige un `index.html` à la racine du webDir, alors que le
-// projet sert `sleep_agenda.html`. On le renomme donc à la copie.
+// Source is never modified: the only adaptation is the entry file name. Capacitor
+// requires an `index.html` at the root of webDir, while the project serves
+// `sleep_agenda.html`, so it is renamed as it is copied.
 //
-// À relancer après chaque modification du frontend : `npm run sync`.
+// Re-run after every frontend change: `npm run sync`.
 
 const fs = require('fs');
 const path = require('path');
@@ -18,7 +18,7 @@ function copyDir(src, dest) {
   fs.mkdirSync(dest, { recursive: true });
   for (const item of fs.readdirSync(src, { withFileTypes: true })) {
     const from = path.join(src, item.name);
-    // Le fichier d'entrée devient index.html ; tout le reste garde son nom.
+    // The entry file becomes index.html; everything else keeps its name.
     const to = path.join(dest, item.name === ENTRY ? 'index.html' : item.name);
     if (item.isDirectory()) copyDir(from, to);
     else fs.copyFileSync(from, to);

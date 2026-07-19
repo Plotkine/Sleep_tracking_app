@@ -40,7 +40,7 @@ const S = {
     goal_label:'Objectif :', loaded_edit:'✏️ Entrée chargée pour modification',
     deleted_entry:'🗑 Entrée supprimée', del_again:'Cliquer à nouveau pour confirmer la suppression',
     card_goals:'Objectifs', card_habits_t:'Habitudes',
-    // --- Corrélations (onglet Statistiques) ---
+    // --- Correlations (Statistics tab) ---
     corr_dur_veille:'Durée nuit veille', corr_dur_avv:'Durée nuit avant-veille',
     corr_dur_avg: n => `Durée moy. ${n} dernières nuits`,
     corr_forme_jour:'Forme du jour',
@@ -228,7 +228,7 @@ function t(k){ return (S[lang]||S.fr)[k] ?? S.fr[k] ?? k; }
 function applyLang() {
   VNAME = lang==='en' ? VNAME_EN : VNAME_FR;
   const ids = {
-    // Les libellés ont leur propre span : écrire sur le lien lui-même effacerait l'icône.
+    // Labels have their own span: writing on the link itself would wipe the icon.
     'nav-lbl-summary':'nav_summary','nav-lbl-habits':'nav_habits','nav-lbl-entry':'nav_saisie',
     'nav-lbl-history':'nav_hist','nav-lbl-statistics':'nav_stats','nav-lbl-options':'nav_options',
     'lbl-display-card':'display_card','lbl-theme':'lbl_theme','lbl-lang':'lbl_lang',
@@ -269,8 +269,8 @@ function applyLang() {
   if (document.getElementById('tab-history').classList.contains('active')) renderHistory();
   if (document.getElementById('tab-statistics').classList.contains('active')) renderStats();
   if (document.getElementById('tab-summary').classList.contains('active')) renderSummary();
-  // L'aperçu de la Saisie porte des heures : il doit suivre le changement de langue.
-  // (Pas de renderHabitsForm ici : il remettrait à zéro les habitudes cochées.)
+  // The Entry preview carries times, so it must follow the language change.
+  // (No renderHabitsForm here: it would clear the habits ticked in the form.)
   updatePreview();
 }
 

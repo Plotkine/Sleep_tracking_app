@@ -1,13 +1,13 @@
-// ---- Sauvegarde : export / import de la totalité des données ----
+// ---- Backup: export / import of the whole dataset ----
 //
-// Un seul fichier JSON porte tout ce que l'utilisateur a produit : les nuits, les
-// habitudes et les deux objectifs. C'est le format d'échange entre le web app et
-// l'app Android, qui ne partagent aucun stockage.
+// A single JSON file carries everything the user produced: nights, habits and both
+// targets. It is the exchange format between the web app and the Android app, which
+// share no storage.
 
-const BACKUP_FORMAT = 1;   // à incrémenter si la structure change de façon incompatible
+const BACKUP_FORMAT = 1;   // bump if the structure changes incompatibly
 
-// Assemble l'état courant. Les objectifs vivent dans localStorage, pas dans les
-// fichiers de données : sans eux la restauration serait incomplète.
+// Assembles the current state. Targets live in localStorage, not in the data files:
+// leaving them out would make a restore silently incomplete.
 function buildBackup() {
   return {
     app: 'agenda-sommeil',
@@ -23,15 +23,15 @@ function backupFileName() {
   return `agenda-sommeil-${new Date().toISOString().slice(0, 10)}.json`;
 }
 
-// Téléchargement via un Blob. Dans la WebView Android le clic programmatique sur
-// un lien `download` fonctionne, mais si l'environnement le refuse on bascule sur
-// le partage natif, puis en dernier recours sur un affichage copiable.
-// Android : la WebView n'expose pas toujours le partage de fichiers de `navigator.share`,
-// et le repli `<a download>` écrit silencieusement dans Téléchargements — d'où l'export
-// « réussi » sans savoir où. Les plugins natifs ouvrent la feuille de partage système,
-// qui propose « Enregistrer dans Fichiers » et donc le choix du dossier.
-// Le fichier est d'abord écrit dans le cache : c'est une copie temporaire, la
-// destination réelle est celle que choisit l'utilisateur.
+// Download through a Blob. In the Android WebView a programmatic click on a
+// `download` link works, but if the environment refuses it we fall back to native
+// sharing, then as a last resort to a copyable textarea.
+// Android: the WebView does not always expose file sharing through `navigator.share`,
+// and the `<a download>` fallback writes silently to Downloads — hence an export that
+// reports success with no hint of where it went. The native plugins open the system
+// share sheet, which offers "Save to Files" and therefore a choice of folder.
+// The file is first written to the cache: that copy is temporary, the real
+// destination is the one the user picks.
 async function exportViaNative(json, name) {
   const P = window.Capacitor && window.Capacitor.Plugins;
   if (!window.Capacitor || !window.Capacitor.isNativePlatform || !window.Capacitor.isNativePlatform()) return false;
@@ -50,14 +50,14 @@ async function exportData() {
   try {
     if (await exportViaNative(json, name)) { showBackupStatus(t('bk_exported')); return; }
   } catch (err) {
-    // Partage refermé sans choisir : ce n'est pas une erreur, et surtout pas un échec
-    // dont il faudrait avertir.
+    // Share dismissed without choosing: not an error, and certainly not a failure
+    // worth warning about.
     const m = (err && (err.message || err)) + '';
     if (/cancel|abort|dismiss/i.test(m)) return;
-    // Sinon on laisse les replis ci-dessous tenter leur chance.
+    // Otherwise let the fallbacks below have their turn.
   }
 
-  // Partage natif : sur mobile c'est le seul chemin qui laisse choisir la destination.
+  // Native sharing: on a phone this is the only path that lets the user choose where.
   if (navigator.canShare && navigator.share) {
     try {
       const file = new File([json], name, { type: 'application/json' });
@@ -67,7 +67,7 @@ async function exportData() {
         return;
       }
     } catch (err) {
-      if (err && err.name === 'AbortError') return;   // partage annulé : ce n'est pas une erreur
+      if (err && err.name === 'AbortError') return;   // share cancelled: not an error
     }
   }
 
@@ -78,17 +78,17 @@ async function exportData() {
     document.body.appendChild(a);
     a.click();
     a.remove();
-    // Révocation différée : Chrome annule le téléchargement si l'URL meurt trop tôt.
+    // Deferred revocation: Chrome cancels the download if the URL dies too early.
     setTimeout(() => URL.revokeObjectURL(url), 10000);
-    // Ce chemin ne laisse pas choisir : on nomme au moins le fichier et son dossier,
-    // sinon l'export paraît avoir disparu.
+    // This path offers no choice, so it at least names the file and its folder —
+    // otherwise the export looks as though it vanished.
     showBackupStatus(t('bk_exported_dl')(name));
   } catch {
     showBackupFallback(json);
   }
 }
 
-// Dernier recours : le JSON à copier à la main.
+// Last resort: the JSON to copy by hand.
 function showBackupFallback(json) {
   const box = document.getElementById('backup-fallback');
   if (!box) return;
@@ -107,8 +107,8 @@ function showBackupStatus(msg, isError = false) {
   el._t = setTimeout(() => { el.textContent = ''; }, 4000);
 }
 
-// Contrôle du fichier avant d'écraser quoi que ce soit : un import invalide qui
-// viderait l'agenda serait irrattrapable.
+// Validate the file before overwriting anything: an invalid import that emptied the
+// diary would be unrecoverable.
 function parseBackup(text) {
   let data;
   try { data = JSON.parse(text); }
@@ -116,14 +116,14 @@ function parseBackup(text) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(t('bk_err_shape'));
   if (!Array.isArray(data.entries)) throw new Error(t('bk_err_shape'));
   if (data.habits != null && !Array.isArray(data.habits)) throw new Error(t('bk_err_shape'));
-  // Une entrée sans date ne serait affichable nulle part.
+  // An entry without a date could not be displayed anywhere.
   if (data.entries.some(e => !e || typeof e.dateStr !== 'string')) throw new Error(t('bk_err_entries'));
   return data;
 }
 
-let _pendingImport = null;   // sauvegarde validée, en attente de confirmation
+let _pendingImport = null;   // validated backup, awaiting confirmation
 
-// Étape 1 : lire et valider, puis demander confirmation — l'import remplace tout.
+// Step 1: read and validate, then ask for confirmation — the import replaces everything.
 function onImportFile(input) {
   const file = input.files && input.files[0];
   if (!file) return;
@@ -144,7 +144,7 @@ function onImportFile(input) {
   };
   reader.onerror = () => showBackupStatus(t('bk_err_read'), true);
   reader.readAsText(file);
-  input.value = '';   // permet de resélectionner le même fichier ensuite
+  input.value = '';   // allows the same file to be picked again afterwards
 }
 
 function cancelImport() {
@@ -152,7 +152,7 @@ function cancelImport() {
   document.getElementById('import-confirm').style.display = 'none';
 }
 
-// Étape 2 : remplacer les données, persister, puis tout réafficher.
+// Step 2: replace the data, persist it, then re-render everything.
 async function confirmImport() {
   if (!_pendingImport) return;
   const data = _pendingImport;

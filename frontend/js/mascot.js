@@ -51,7 +51,7 @@ function meerkitSVG(state) {
     </g>
   </svg>`;
 
-  // ── M : fatigué, se frotte les yeux ─────────────────────────────────────────
+  // ── M: tired, rubbing an eye ────────────────────────────────────────────────
   if (score===1) return `<svg viewBox="0 0 88 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
     <path d="M57,126 Q78,108 74,84 Q70,68 62,70" stroke="${dtan}" stroke-width="8" fill="none" stroke-linecap="round"/>
     <path d="M57,126 Q78,108 74,84 Q70,68 62,70" stroke="${tan}" stroke-width="5" fill="none" stroke-linecap="round" stroke-dasharray="6,7"/>
@@ -117,7 +117,7 @@ function meerkitSVG(state) {
     <line x1="36" y1="67" x2="50" y2="67" stroke="${dk}" stroke-width="2" stroke-linecap="round"/>
   </svg>`;
 
-  // ── B : en forme, marche d'un bon pas, bras balancé ─────────────────────────
+  // ── B: in good shape, walking briskly, arm swinging ─────────────────────────
   if (score===3) return `<svg viewBox="0 0 96 140" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
     <!-- queue relevée (énergie) -->
     <path d="M62,122 Q82,100 78,74 Q75,58 68,55" stroke="${dtan}" stroke-width="8" fill="none" stroke-linecap="round"/>
@@ -156,7 +156,7 @@ function meerkitSVG(state) {
     <path d="M38,66 Q47,71 56,66" stroke="${dk}" stroke-width="2" fill="none" stroke-linecap="round"/>
   </svg>`;
 
-  // ── TB : déborde d'énergie, soulève des haltères au-dessus de la tête ────────
+  // ── TB: bursting with energy, lifting a barbell overhead ────────────────────
   return `<svg viewBox="0 0 100 148" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
     <!-- étincelles d'effort -->
     <line x1="8"  y1="44" x2="2"  y2="38" stroke="#F5C518" stroke-width="2.5" stroke-linecap="round"/>

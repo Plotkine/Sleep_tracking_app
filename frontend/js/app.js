@@ -20,9 +20,9 @@ function showTab(name, push=true) {
   // Chaque onglet repart en haut : sur mobile on arrive sinon au milieu du contenu.
   window.scrollTo(0, 0);
 }
-// Rotation de l'écran ou redimensionnement : la mise en page des Statistiques et de
-// l'Historique dépend de la largeur, il faut donc les recalculer. Débounce pour ne
-// pas relancer un rendu à chaque pixel pendant le redimensionnement.
+// Screen rotation or resize: the layout of Statistics and History depends on width,
+// so they must be recomputed. Debounced, to avoid re-rendering on every pixel while
+// the window is being dragged.
 let _resizeTimer = null;
 window.addEventListener('resize', () => {
   clearTimeout(_resizeTimer);
@@ -35,7 +35,7 @@ window.addEventListener('resize', () => {
 window.addEventListener('popstate', e => {
   showTab(e.state?.tab || tabFromPath(), false);
 });
-// Mode ancre : le bouton « retour » d'Android ne déclenche que hashchange.
+// Hash mode: Android's back button only fires hashchange.
 window.addEventListener('hashchange', () => {
   const name = tabFromPath();
   if (!document.getElementById('tab-'+name).classList.contains('active')) showTab(name, false);
@@ -59,8 +59,8 @@ function toggleTheme() {
 }
 
 // ---- Date navigation helpers ----
-// Sélecteurs des objectifs : mêmes composants que la Saisie. Un objectif ne peut
-// pas être vide, d'où allowClear:false sur les deux.
+// Target pickers: the same widgets as Entry. A target may never be empty, hence
+// allowClear:false on both.
 function initTargetPickers() {
   initDqp('durgoal', {
     hId: 'dur-target-h', mId: 'dur-target-m',
@@ -69,8 +69,8 @@ function initTargetPickers() {
   const box = document.getElementById('sleep-target-container');
   box.innerHTML = buildTimePicker('sleep-target', 15, { allowClear: false });
   box.querySelector('.sleep-target').addEventListener('input', ev => {
-    // Une saisie vide (champ effacé au clavier) ne doit pas supprimer l'objectif :
-    // on rétablit la valeur courante.
+    // An empty input (field cleared from the keyboard) must not delete the target:
+    // the current value is restored.
     if (!ev.target.value) { ev.target.value = sleepTarget; tpSyncAll(box); return; }
     updateSleepTarget(ev.target.value);
   });
