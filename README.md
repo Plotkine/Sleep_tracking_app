@@ -4,6 +4,10 @@ Keep a diary of how you sleep, and find out what actually changes how you feel.
 
 Every morning you record when you went to bed, when you fell asleep and when you woke up. Every evening you say how your day went. After a few weeks the app tells you what is really linked to your good days — going to bed earlier, sleeping longer, keeping a particular habit — based on **your** nights, not on general advice.
 
+It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
+
+> **⚠️ Still in testing.** This is a personal project under active development, not a finished product. Expect rough edges and expect things to change. Please **export your data from time to time** (Settings tab) — a future version may not be able to read what an older one saved.
+
 ## Why keep a sleep diary
 
 A sleep diary is not a tracking gadget. It is the standard clinical instrument for assessing insomnia, and it is the entry point to the treatment that works best over time.
@@ -22,9 +26,6 @@ And, crucially, **against the habits you define yourself**. You add the ones you
 
 **What it is not.** It follows the structure of the [Réseau Morphée](https://reseau-morphee.fr/) sleep diary. It is a diary and a mirror — not a diagnosis, not a therapy, and no substitute for a doctor. Correlation is not causation, and a few dozen nights is a small sample: the app shows the number of pairs behind every figure for that reason. If your sleep worries you, take the diary to a professional: that is exactly what it is good for.
 
-It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
-
-> **⚠️ Still in testing.** This is a personal project under active development, not a finished product. Expect rough edges and expect things to change. Please **export your data from time to time** (Settings tab) — a future version may not be able to read what an older one saved.
 
 ## Try it
 
