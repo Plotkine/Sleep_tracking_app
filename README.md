@@ -103,7 +103,7 @@ Choose a target sleep duration and bedtime; they appear as reference lines on th
 
 You type what happened, and the app does arithmetic on it — that is the whole product.
 
-The one piece of bullsh*t left is the meerkat. It has no function beyond showing at a glance how the last recorded day went, and it is the only thing here that is not strictly useful. It stays.
+The only questionable feature is the meerkat mascot :-)
 
 ## Your data
 
