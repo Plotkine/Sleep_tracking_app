@@ -4,7 +4,7 @@ function renderHabitsForm(habitsDone, habitsNotDone) {
   if (!el) return;
   const active = habits.filter(h => h.tracked !== false);
   if (!active.length) {
-    el.innerHTML = '<p style="font-size:0.78rem;color:var(--muted);margin:4px 0">Aucune habitude suivie. Gérez-les dans l\'onglet Habitudes.</p>';
+    el.innerHTML = `<p style="font-size:0.78rem;color:var(--muted);margin:4px 0">${t('hb_none')}</p>`;
     return;
   }
   el.innerHTML = '';
@@ -16,8 +16,8 @@ function renderHabitsForm(habitsDone, habitsNotDone) {
     row.dataset.hid = h.id;
     row.innerHTML = `<span class="habit-label"><span>${h.name}</span></span>
       <div style="display:flex;gap:4px">
-        <button class="habit-state-btn${isDone?' active-done':''}" data-state="done" onclick="toggleHabitState(this,'done')" title="Fait">✓</button>
-        <button class="habit-state-btn${isNotDone?' active-notdone':''}" data-state="notdone" onclick="toggleHabitState(this,'notdone')" title="Non fait">✗</button>
+        <button class="habit-state-btn${isDone?' active-done':''}" data-state="done" onclick="toggleHabitState(this,'done')" title="${t('b_done')}">✓</button>
+        <button class="habit-state-btn${isNotDone?' active-notdone':''}" data-state="notdone" onclick="toggleHabitState(this,'notdone')" title="${t('b_notdone')}">✗</button>
       </div>`;
     el.appendChild(row);
   });
@@ -64,7 +64,7 @@ function _makeHabitRow(h) {
         <option value="same" ${h.sleepImpact==='same'?'selected':''}>J</option>
       </select>
     </label>
-    <button class="del-btn" onclick="deleteHabit('${h.id}')" title="Supprimer">${trashSvg}</button>`;
+    <button class="del-btn" onclick="deleteHabit('${h.id}')" title="${t('act_delete')}">${trashSvg}</button>`;
   row.querySelector('.habit-impact-sel').addEventListener('change', async function() {
     h.sleepImpact = this.value; await saveHabits();
   });
@@ -191,7 +191,7 @@ function renderFormViz(days, allDates = []) {
     </div>
     <div style="display:flex;gap:14px;margin-top:10px;font-size:0.72rem;color:var(--muted);flex-wrap:wrap">
       ${VALS.map(v=>`<span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${RCOLOR[v]};margin-right:4px;vertical-align:middle"></span>${VNAME[v]}</span>`).join('')}
-      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--border);opacity:0.4;margin-right:4px;vertical-align:middle"></span>Non encodée</span>
+      <span><span style="display:inline-block;width:10px;height:10px;border-radius:2px;border:1px solid var(--border);opacity:0.4;margin-right:4px;vertical-align:middle"></span>${t('hx_none')}</span>
     </div>`;
   requestAnimationFrame(() => {
     const sc = document.getElementById('form-viz-scroll');
@@ -204,7 +204,7 @@ function renderHabitsViz(days, targetId = 'habits-viz', allDates = []) {
   if (!el) return;
   const active = habits.filter(h => h.tracked !== false);
   if (!active.length) {
-    el.innerHTML = '<p style="font-size:0.82rem;color:var(--muted)">Aucune habitude suivie.</p>';
+    el.innerHTML = `<p style="font-size:0.82rem;color:var(--muted)">${t('hb_none_short')}</p>`;
     return;
   }
   const R = 'height:13px;margin-bottom:4px;display:flex;align-items:center;';
@@ -219,7 +219,7 @@ function renderHabitsViz(days, targetId = 'habits-viz', allDates = []) {
     const squares = done.map((v, i) => {
       const ds = allDates[i] || (days[i] && days[i].dateStr) || '';
       const dateLabel = ds ? new Date(ds+'T12:00:00').toLocaleDateString(t('locale'),{weekday:'short',day:'2-digit',month:'short'}) : '';
-      const tip = dateLabel ? `${dateLabel} — ${v === true ? 'Fait' : v === false ? 'Non fait' : t('hb_notenc')}` : '';
+      const tip = dateLabel ? `${dateLabel} — ${v === true ? t('b_done') : v === false ? t('b_notdone') : t('hb_notenc')}` : '';
       // Done = filled · Not done = empty, crisp outline · Not tracked = empty, faint outline
       if (v === null) return `<div class="habits-viz-sq" style="background:transparent;border:1px solid var(--border);opacity:0.3" title="${tip}"></div>`;
       if (v === true) return `<div class="habits-viz-sq" style="background:#27ae60" title="${tip}"></div>`;

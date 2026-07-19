@@ -1,9 +1,9 @@
 const TABS = ['summary','entry','history','statistics','habits','options'];
 
 // Deux modes de navigation :
-//   · servi par sleep_server.py → vraies URLs (/summary…), que le serveur sait rendre ;
-//   · sans serveur (app Android) → ancres (#/summary). Le serveur local de Capacitor
-//     ne sait pas rediriger une route inconnue vers index.html : un rechargement sur
+//   · served by sleep_server.py → real URLs (/summary…), which the server can render;
+//   · with no server (Android app) → hashes (#/summary). Capacitor's local server
+//     cannot redirect an unknown route to index.html: reloading on
 //     /summary y renverrait un 404.
 function showTab(name, push=true) {
   document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
@@ -17,7 +17,7 @@ function showTab(name, push=true) {
   if (name==='summary')    renderSummary();
   if (name==='history')    renderHistory();
   if (name==='statistics') renderStats();
-  // Chaque onglet repart en haut : sur mobile on arrive sinon au milieu du contenu.
+  // Every tab starts at the top: on mobile you would otherwise land mid-content.
   window.scrollTo(0, 0);
 }
 // Screen rotation or resize: the layout of Statistics and History depends on width,
@@ -41,7 +41,7 @@ window.addEventListener('hashchange', () => {
   if (!document.getElementById('tab-'+name).classList.contains('active')) showTab(name, false);
 });
 function tabFromPath() {
-  // L'ancre prime : c'est elle qui porte la route hors serveur.
+  // The hash wins: it carries the route when there is no server.
   const hash = location.hash.replace(/^#\/?/, '');
   const path = hash || location.pathname.replace(/^\//, '');
   return TABS.includes(path) ? path : 'summary';

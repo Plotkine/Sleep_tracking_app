@@ -41,7 +41,7 @@ The phone and the browser keep **separate diaries** — they do not sync. To mov
 
 ## What you can do with it
 
-*The screenshots below use made-up data.*
+*Screenshots taken on a phone, with made-up data.*
 
 ### See where you stand
 
@@ -70,6 +70,8 @@ Your sleep duration and bedtime plotted night after night against the goals you 
 ### Set goals and track habits
 
 Choose a target sleep duration and bedtime; they appear as reference lines on the charts. Add the habits you want to hold — no screens before bed, exercise, no late coffee — and say whether each one affects the night that follows or the one after. The app then measures whether they actually make a difference for you.
+
+![Goals and habits](docs/screenshots/habits.png)
 
 ## Your data
 

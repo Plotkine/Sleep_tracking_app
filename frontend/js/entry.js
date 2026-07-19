@@ -1,4 +1,4 @@
-// Onglet Saisie : construction et lecture du formulaire, enregistrement, navigation par date, calendrier.
+// Entry tab: building and reading the form, saving, date navigation, calendar.
 function getDateValue() {
   const d = document.getElementById('f-day').value;
   const m = document.getElementById('f-month').value;
@@ -13,11 +13,11 @@ function setDateValue(dateStr) {
     const el = document.getElementById('date-display');
     if (el) el.textContent = '–';
     const nuit = document.getElementById('lbl-nuit-card');
-    if (nuit) nuit.textContent = '🌙 Nuit';
+    if (nuit) nuit.textContent = t('nuit_card');
     const jour = document.getElementById('lbl-journee-card');
-    if (jour) jour.textContent = '☀️ Journée';
+    if (jour) jour.textContent = t('journee_card');
     const forme = document.getElementById('lbl-form-card');
-    if (forme) forme.textContent = 'Forme de la journée';
+    if (forme) forme.textContent = t('form_card');
     return;
   }
   const [y, m, d] = dateStr.split('-');
@@ -31,11 +31,11 @@ function setDateValue(dateStr) {
     const next = new Date(dt); next.setDate(next.getDate() + 1);
     const fmt = x => x.toLocaleDateString(t('locale'), {day:'2-digit', month:'2-digit'});
     const nuit = document.getElementById('lbl-nuit-card');
-    if (nuit) nuit.textContent = `🌙 Nuit (${fmt(dt)} - ${fmt(next)})`;
+    if (nuit) nuit.textContent = t('nuit_card_d')(fmt(dt), fmt(next));
     const jour = document.getElementById('lbl-journee-card');
-    if (jour) jour.textContent = `☀️ Journée (${fmt(next)})`;
+    if (jour) jour.textContent = t('journee_card_d')(fmt(next));
     const forme = document.getElementById('lbl-form-card');
-    if (forme) forme.textContent = `Forme de la journée (${fmt(next)})`;
+    if (forme) forme.textContent = t('form_card_d')(fmt(next));
   }
 }
 
@@ -231,7 +231,7 @@ function updatePreview() {
     const d = new Date(e.dateStr+'T12:00:00'), n = new Date(d);
     n.setDate(n.getDate()+1);
     document.getElementById('prev-date').textContent =
-      `Nuit du ${d.toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'})} au ${n.toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'})}`;
+      t('night_of')(d.toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'}), n.toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'}));
   } else {
     document.getElementById('prev-date').textContent = '';
   }
@@ -374,7 +374,7 @@ function fillFormFromEntry(e) {
 }
 
 // Empties the form *without* touching the displayed date: it clears what was typed,
-// on ne renvoie pas l'utilisateur sur un autre jour. switchMode('detailed') se charge
+// without sending the user to another day. switchMode('detailed') takes care of
 // rebuilding empty lists, since editingId has just been reset to null.
 function resetForm() {
   editingId = null;

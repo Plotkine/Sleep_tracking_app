@@ -1,4 +1,4 @@
-// Calculs du domaine : conversion des heures, durée d'une nuit, formatage.
+// Domain maths: hour conversion, night duration, formatting.
 // Fonctions pures — aucune lecture du DOM.
 function sleepOnsetH(e) {
   if (!e) return null;
@@ -10,20 +10,20 @@ function sleepOnsetH(e) {
   return h >= 20 ? h + m / 60 : h + m / 60 + 24;
 }
 // Bornes des intervalles : première valeur exclue, seconde incluse — ]a, b]
-// Séparateur des heures d'horloge, selon la langue : le français écrit « 23h15 »,
-// l'anglais « 23:15 » et jamais « 23h15 ». Les durées, elles, gardent « 7h30 » dans
-// les deux langues — « 7:30 » se lirait comme une heure d'horloge.
+// Clock-time separator, by language: French writes "23h15", English "23:15" and
+// never "23h15". Durations keep "7h30" in both languages — "7:30" would read as a
+// clock time.
 function clockSep() { return lang === 'en' ? ':' : 'h'; }
 
-// Heure décimale (23.25) -> « 23h15 » / « 23:15 »
+// Decimal hour (23.25) -> "23h15" / "23:15"
 function fmtDecH(v) {
   const dec = v >= 24 ? v - 24 : v;
   const hh = Math.floor(dec), mm = Math.round((dec % 1) * 60);
   return `${String(hh).padStart(2,'0')}${clockSep()}${String(mm).padStart(2,'0')}`;
 }
 
-// Heure déjà au format de stockage « HH:MM » -> notation de la langue courante.
-// Le stockage, lui, reste toujours « HH:MM » : ceci ne sert qu'à l'affichage.
+// A time already in storage format "HH:MM" -> the current language's notation.
+// Storage itself always stays "HH:MM": this is for display only.
 function fmtClock(t) {
   if (!t || !/^\d{1,2}:\d{2}$/.test(t)) return t || '';
   return t.replace(':', clockSep());
@@ -97,15 +97,15 @@ function fmtDate(ds) {
 }
 
 // ---- Timeline renderer ----
-// Date locale au format YYYY-MM-DD. `toISOString()` bascule en UTC : entre minuit et
-// le décalage horaire (2 h l'été en Belgique) il renvoie la veille, ce qui décalait
-// toute l'app d'un jour en pleine nuit — et bloquait la saisie du jour concerné.
+// Local date as YYYY-MM-DD. `toISOString()` switches to UTC: between midnight and the
+// local offset (2 h in summer here) it returns the previous day, which shifted the
+// whole app by one day in the small hours — and blocked entry for the day concerned.
 function localDate(d = new Date()) {
   return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
 }
 
-// Dernière date encodable. Une entrée datée J porte la nuit J→J+1, qui commence à
-// 20:00 — l'origine de la timeline : le jour J devient donc saisissable dès 20:00.
+// Latest encodable date. An entry dated D carries the night D→D+1, which starts at
+// 20:00 — the timeline origin — so day D becomes recordable from 20:00 that day.
 const DAY_START_HOUR = 20;
 function latestEncodableDate() {
   const now = new Date();

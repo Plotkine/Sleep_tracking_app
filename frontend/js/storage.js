@@ -1,20 +1,20 @@
 // ---- Couche de persistance ----
 //
-// Deux back-ends, choisis une fois au démarrage :
-//   · l'API du serveur Python (data/*.json) quand elle répond ;
-//   · le localStorage sinon — c'est le cas de l'application Android empaquetée
-//     par Capacitor, qui n'embarque aucun serveur.
+// Two backends, chosen once at startup:
+//   · the Python server API (data/*.json) when it answers;
+//   · localStorage otherwise — the case of the Android app packaged with Capacitor,
+//     which ships no server.
 //
-// Le localStorage est écrit dans les deux cas : il sert de cache et de filet si le
-// serveur disparaît en cours de route. Le reste du code n'appelle que storeLoad /
-// storeSave et ignore lequel des deux est actif.
+// localStorage is written in both cases: it acts as a cache and as a safety net if
+// the server disappears mid-session. The rest of the code only calls storeLoad /
+// storeSave and never knows which backend is active.
 
 const LS_KEYS = { entries: 'sleepEntries', habits: 'sleepHabits' };
 
-let _serverAvailable = false;   // décidé par storeDetectBackend(), au démarrage
+let _serverAvailable = false;   // decided by storeDetectBackend(), at startup
 
-// Teste l'API une seule fois. Sans serveur, `fetch` lève (ou renvoie une erreur)
-// et l'on bascule définitivement sur le localStorage.
+// Probes the API once. With no server, `fetch` throws (or returns an error) and we
+// switch to localStorage for good.
 async function storeDetectBackend() {
   try {
     const r = await fetch('/api/entries', { method: 'GET' });
@@ -31,22 +31,22 @@ function _lsRead(kind) {
   try {
     const v = JSON.parse(localStorage.getItem(LS_KEYS[kind]) || '[]');
     return Array.isArray(v) ? v : [];
-  } catch { return []; }   // entrée corrompue : on repart d'une liste vide
+  } catch { return []; }   // corrupt entry: start again from an empty list
 }
 
 function _lsWrite(kind, data) {
   try { localStorage.setItem(LS_KEYS[kind], JSON.stringify(data)); }
-  catch { /* quota dépassé ou stockage refusé : on ne bloque pas l'app */ }
+  catch { /* quota exceeded or storage refused: do not block the app */ }
 }
 
-// `kind` vaut 'entries' ou 'habits' — les deux collections persistées.
+// `kind` is 'entries' or 'habits' — the two persisted collections.
 async function storeLoad(kind) {
   if (_serverAvailable) {
     try {
       const r = await fetch(`/api/${kind}`);
       if (r.ok) {
         const data = await r.json();
-        _lsWrite(kind, data);   // on garde une copie locale à jour
+        _lsWrite(kind, data);   // keep the local copy up to date
         return data;
       }
     } catch { _serverAvailable = false; }
@@ -64,6 +64,6 @@ async function storeSave(kind, data) {
       body: JSON.stringify(data),
     });
   } catch {
-    _serverAvailable = false;   // le serveur s'est arrêté : la copie locale suffit
+    _serverAvailable = false;   // the server stopped: the local copy is enough
   }
 }

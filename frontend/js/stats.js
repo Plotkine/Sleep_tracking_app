@@ -1,4 +1,4 @@
-// Onglet Statistiques : cartes de moyennes, carrés Forme/Habitudes et les deux graphes Chart.js.
+// Statistics tab: average cards, Form/Habits squares and the two Chart.js charts.
 function renderStats() {
   const sorted = [...entries].sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
 
@@ -25,9 +25,9 @@ function renderStats() {
   const days = allDates.map(d => entryMap[d] || null);
   const xlabels = allDates.map(d => new Date(d+'T12:00:00').toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'}));
 
-  // Jusqu'à 7 jours les deux graphes tiennent côte à côte, à largeur égale ;
-  // au-delà, chacun prend toute la largeur pour rester lisible.
-  // Sur un écran étroit (mobile), chaque graphe prend toute la largeur quoi qu'il arrive.
+  // Up to 7 days the two charts fit side by side, at equal width; beyond that each
+  // takes the full width to stay readable.
+  // On a narrow screen (mobile) each chart takes the full width regardless.
   { const SIDE_BY_SIDE_MAX_DAYS = 7, MIN_WIDTH_FOR_TWO = 760;
     const side = allDates.length <= SIDE_BY_SIDE_MAX_DAYS && window.innerWidth >= MIN_WIDTH_FOR_TWO;
     ['c-dur-wrap', 'c-sleep-wrap'].forEach(id => {
@@ -41,15 +41,15 @@ function renderStats() {
   renderFormViz(days, allDates);
   renderHabitsViz(days, 'habits-viz', allDates);
 
-  // Forme / Habitudes : une barre de défilement horizontale signifie que l'encart
-  // est trop à l'étroit à mi-largeur — on lui rend alors toute la ligne.
+  // Form / Habits: a horizontal scrollbar means the card is too cramped at half
+  // width — it is then given the whole row.
   requestAnimationFrame(() => {
     ['form-viz-scroll', 'habits-viz-scroll'].forEach(id => {
       const sc = document.getElementById(id);
       const card = sc?.closest('.chart-card');
       if (!card) return;
-      // On mesure à mi-largeur figée (flex-grow 0) : sinon un encart seul sur sa
-      // ligne s'étirerait déjà à 100 % et ne déborderait plus.
+      // Measured at a pinned half width (flex-grow 0): otherwise a card alone on its
+      // row would already be stretched to 100% and would never appear to overflow.
       card.style.flex = '0 1 calc(50% - 9px)';
       const overflows = sc.scrollWidth > sc.clientWidth;
       card.style.flex = overflows ? '1 1 100%' : '';
@@ -114,9 +114,9 @@ function renderStats() {
     }};
   }
 
-  // Inline plugin: relie les points. Chaque segment reçoit son propre dégradé, de la
-  // couleur du point de gauche à celle du point de droite, si bien que la teinte suit
-  // le passage d'une bande à l'autre. Réservé au graphe des durées.
+  // Inline plugin: joins the dots. Each segment gets its own gradient, from the left
+  // dot's colour to the right one's, so the hue follows the move from one band to the
+  // next. Reserved for the duration chart.
   function gradientLine(colorFn) {
     return { id:'gradientLine', beforeDatasetsDraw(chart) {
       const { ctx } = chart;
@@ -128,9 +128,9 @@ function renderStats() {
         ctx.save();
         ctx.lineWidth = 2;
         // Segment par segment, et seulement entre deux jours consécutifs : l'axe
-        // couvre une plage de dates continue, donc deux points séparés d'un jour
-        // non encodé ne doivent pas être reliés — la ligne inventerait une
-        // continuité qui n'existe pas dans les données.
+        // spans a continuous date range, so two points separated by an unrecorded day
+        // must not be joined — the line would invent a continuity the data does not
+        // have.
         for (let k = 0; k < pts.length - 1; k++) {
           const a = pts[k], b = pts[k+1];
           if (b.j - a.j !== 1) continue;
@@ -175,8 +175,8 @@ function renderStats() {
   document.getElementById('dur-goal').innerHTML =
     `<span class="goal-dash"></span>${t('goal_label')} ${fmtH(tD)}`;
   document.getElementById('dur-legend').innerHTML = bandsLegendHtml(durBands());
-  // Axe toujours ancré à 0h : les traits verticaux partent de l'abscisse, donc leur
-  // longueur ne se lit correctement que sur une base zéro.
+  // Axis always anchored at 0h: the vertical strokes start from the x axis, so their
+  // length only reads correctly on a zero baseline.
   const durVals = durData.filter(v => v != null);
   const durLo = 0;
   const durHi = Math.ceil(Math.max(tD, ...durVals)) + 1;
@@ -185,7 +185,7 @@ function renderStats() {
     data: {
       labels: xlabels,
       datasets: [{
-        label: 'Durée de sommeil',
+        label: t('chart_dur'),
         data: durData,
         borderWidth: 0,
         pointRadius: durData.map(v => v != null ? 4 : 0),
@@ -224,7 +224,7 @@ function renderStats() {
     data: {
       labels: xlabels,
       datasets: [{
-        label: "Heure d'endormissement",
+        label: t('chart_sleep'),
         data: onsetData,
         borderWidth: 0,
         pointRadius: onsetData.map(v => v != null ? 4 : 0),
@@ -254,7 +254,7 @@ function renderStats() {
     plugins: [ refLine(tH, fmtClock(sleepTarget)), dotLabels(onsetColor, fmtDecH) ]
   });
 
-  // Tableau des corrélations, en bas de l'onglet (défini dans summary.js).
+  // Correlation table, at the bottom of the tab (defined in summary.js).
   renderCorrelations();
 }
 

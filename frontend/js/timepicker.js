@@ -62,7 +62,7 @@ function tpClear(id, ev) {
   inp.dispatchEvent(new Event('input', {bubbles: true}));
 }
 
-// ---- Saisie clavier directe dans le champ heure ----
+// ---- Typing straight into the time field ----
 // "2315" → 23:15 · "23" → 23:00 · "013" → 01:30 (complété à la volée)
 function tpParseDigits(d) {
   let h, m;
@@ -82,8 +82,8 @@ function tpFocusNext(disp) {
 
 function tpType(id, disp) {
   let v = disp.value;
-  // Champ non sélectionné à l'ouverture (tactile) : la première frappe remplace la
-  // valeur au lieu de s'y ajouter — sans quoi taper sur « 23:15 » donnerait « 2315… »
+  // Field not selected on open (touch): the first keystroke replaces the value rather
+  // than appending to it — otherwise typing over "23:15" would give "2315…"
   // aussitôt retronqué à l'ancienne heure, et le champ paraîtrait bloqué.
   if (disp.dataset.fresh) {
     delete disp.dataset.fresh;
@@ -99,7 +99,7 @@ function tpType(id, disp) {
 function tpCommit(id, advance) {
   const disp = document.getElementById(id + '-disp');
   const inp  = document.getElementById(id + '-v');
-  delete disp.dataset.fresh;   // le champ est validé : plus rien à remplacer
+  delete disp.dataset.fresh;    // the field is committed: nothing left to replace
   const digits = disp.value.replace(/\D/g, '');
   if (!digits.length) {
     if (inp.value !== '') { inp.value = ''; inp.dispatchEvent(new Event('input', {bubbles: true})); }
@@ -129,10 +129,10 @@ function tpFocus(id, ev) {
   const disp = document.getElementById(id + '-disp');
   disp.classList.add('open');
   tpSync(id);
-  // Au clavier, sélectionner tout permet de retaper l'heure par-dessus. Au doigt, la
-  // même sélection fait surgir les poignées et la barre « Copier / Coller » d'Android
-  // par-dessus le sélecteur. On place donc le curseur en fin de champ et on marque la
-  // valeur comme « à remplacer » : la première touche repart de zéro (voir tpType).
+  // With a keyboard, selecting everything lets you retype the time over it. With a
+  // finger, that same selection raises Android's handles and its Copy/Paste bar right
+  // over the picker. So the caret is placed at the end and the value is marked as
+  // "to be replaced": the first key starts from scratch (see tpType).
   if (window.matchMedia('(pointer: coarse)').matches) {
     disp.dataset.prev = disp.value;
     disp.dataset.fresh = '1';
@@ -147,8 +147,8 @@ function tpSyncAll(container) {
   container.querySelectorAll('[data-tp]').forEach(el => tpSync(el.dataset.tp));
 }
 
-// `opts.allowClear === false` retire le bouton « Effacer » : utilisé pour les
-// objectifs, qui ne peuvent pas rester vides.
+// `opts.allowClear === false` removes the "Clear" button: used for the targets, which
+// may never be left empty.
 function buildTimePicker(cls, step, opts = {}) {
   const id = 'tp' + (_tpCnt++);
   const hours = Array.from({length: 24}, (_, h) =>
@@ -167,16 +167,16 @@ function buildTimePicker(cls, step, opts = {}) {
     <div class="tp-popup" id="${id}-pop" style="display:none">
       <div class="tp-hours">${hours}</div>
       ${mins ? `<div class="tp-mins">${mins}</div>` : ''}
-      ${opts.allowClear === false ? '' : `<button type="button" class="tp-clear" onclick="tpClear('${id}',event)">✕ Effacer</button>`}
+      ${opts.allowClear === false ? '' : `<button type="button" class="tp-clear" onclick="tpClear('${id}',event)">${t('act_clear')}</button>`}
     </div>
   </div>`;
 }
 
-// ---- Sélecteur de durée (h + min) ----
-// Plusieurs instances coexistent : la Saisie rapide et l'objectif de durée. Chacune
-// écrit dans deux champs cachés et prévient l'appelant via onPick. La clé sert de
-// préfixe aux ids (`<clé>-container`, `-disp`, `-pop`), et `dqp` reste celle de la
-// Saisie pour que les appels existants restent valables sans argument.
+// ---- Duration picker (h + min) ----
+// Several instances coexist: quick entry and the duration target. Each writes into two
+// hidden fields and notifies the caller through onPick. The key prefixes the ids
+// (`<key>-container`, `-disp`, `-pop`), and `dqp` stays the Entry one so existing
+// no-argument calls keep working.
 const _dqpDefs = {};
 
 function initDqp(key = 'dqp', def = { hId: 'f-quick-h', mId: 'f-quick-m', onPick: () => updatePreview() }) {
@@ -193,7 +193,7 @@ function initDqp(key = 'dqp', def = { hId: 'f-quick-h', mId: 'f-quick-m', onPick
     <div class="tp-popup" id="${key}-pop" style="display:none">
       <div class="tp-hours" style="grid-template-columns:repeat(5,1fr)">${hours}</div>
       <div class="tp-mins" style="grid-template-columns:repeat(6,1fr)">${mins}</div>
-      ${def.allowClear === false ? '' : `<button type="button" class="tp-clear" onclick="dqpClear(event,'${key}')">✕ Effacer</button>`}
+      ${def.allowClear === false ? '' : `<button type="button" class="tp-clear" onclick="dqpClear(event,'${key}')">${t('act_clear')}</button>`}
     </div>
   </div>`;
   dqpSync(key);
@@ -256,4 +256,4 @@ function dqpClear(ev, key = 'dqp') {
 }
 
 // ---- Init ----
-// Champs "Objectifs" — reflètent l'état stocké dès le chargement, quel que soit l'onglet ouvert
+// "Targets" fields — reflect the stored state from load, whichever tab is open

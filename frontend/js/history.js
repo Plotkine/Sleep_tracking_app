@@ -1,4 +1,4 @@
-// Onglet Historique : une ligne par jour sur un axe de dates continu.
+// History tab: one row per day on a continuous date axis.
 function renderHistory() {
   const el = document.getElementById('hist-list');
   if (!entries.length) {
@@ -20,18 +20,18 @@ function renderHistory() {
     <span><span class="arr">↓</span> Mise au lit &nbsp;<span class="arr">↑</span> Lever</span>
   </div>`;
 
-  // Largeurs de colonnes : partagées par l'en-tête, les lignes encodées et les
-  // lignes vides. Si elles divergent, la graduation des heures ne tombe plus en
+  // Column widths: shared by the header, the recorded rows and the empty ones. If
+  // they drift apart, the hour ruler no longer lines up with
   // face des barres.
   const W = { date: '80px', notes: '90px' };
-  // Les heures de début/fin sont centrées sur les bords de la timeline
-  // (translateX(-50%)) : la moitié de l'étiquette déborde donc de sa colonne.
-  // L'écart entre colonnes doit rester plus large que ce débord, sinon elles se
-  // chevauchent. Même valeur pour l'en-tête, la graduation et toutes les lignes.
+  // Start/end times are centred on the timeline edges (translateX(-50%)), so half of
+  // each label spills out of its column. The gap between columns must stay wider than
+  // that overhang, otherwise they overlap. Same value for the header, the ruler and
+  // every row.
   const GAP = '20px';
 
-  // Axe de dates continu, du plus récent au plus ancien : une nuit non encodée
-  // doit apparaître comme telle, sinon elle disparaît sans laisser de trace et
+  // Continuous date axis, newest first: an unrecorded night must show up as such,
+  // otherwise it vanishes without trace and
   // deux dates éloignées se retrouvent collées l'une sous l'autre.
   const byDate = {};
   entries.forEach(e => byDate[e.dateStr] = e);
@@ -41,8 +41,8 @@ function renderHistory() {
     while (c <= end) { allDates.push(c.toISOString().split('T')[0]); c.setDate(c.getDate()+1); }
     allDates.reverse(); }
 
-  // Colonnes du pied et de l'en-tête : mêmes largeurs partout, sinon la
-  // graduation des heures ne tombe plus en face des barres.
+  // Footer and header columns: identical widths everywhere, otherwise the hour ruler
+  // stops falling opposite the bars.
   const spacer = `<button class="edit-btn" style="visibility:hidden;pointer-events:none" aria-hidden="true">${editSvg}</button>`
                + `<button class="del-btn" style="visibility:hidden;pointer-events:none" aria-hidden="true">${delSvg}</button>`;
 
@@ -66,21 +66,21 @@ function renderHistory() {
         <div class="hx-date" style="width:${W.date};font-size:0.76rem;font-weight:600;flex-shrink:0;white-space:nowrap">${shortDate(e.dateStr)}</div>
         <div id="ht-${e.id}" style="flex:1;min-width:50px;position:relative;height:41px;overflow:visible"></div>
         <div class="hx-notes" style="width:${W.notes};flex-shrink:0;font-size:0.72rem;color:var(--muted);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default" title="${(e.notes||'').replace(/"/g,'&quot;')}">${e.notes?'📝 '+e.notes:'/'}</div>
-        <button class="edit-btn" onclick="editEntry(${e.id})" title="Modifier">${editSvg}</button>
-        <button class="del-btn" data-id="${e.id}" onclick="deleteEntry(${e.id})" title="Supprimer">${delSvg}</button>
+        <button class="edit-btn" onclick="editEntry(${e.id})" title="${t('act_edit')}">${editSvg}</button>
+        <button class="del-btn" data-id="${e.id}" onclick="deleteEntry(${e.id})" title="${t('act_delete')}">${delSvg}</button>
       </div>`;
   }).join('');
 
   const pct = h => `${(h/24*100).toFixed(2)}%`;
-  // Toutes les heures, comme les aperçus du Tableau de bord et de la Saisie ; les
-  // multiples de 4 restent plus lisibles pour garder des repères.
+  // Every hour, like the Dashboard and Entry previews; multiples of 4 stay more
+  // prominent to keep landmarks.
   let hourLbls = '';
   for (let h = 0; h <= 24; h++) {
     const hour = (20 + h) % 24;
     const major = h % 4 === 0;
     hourLbls += `<div style="position:absolute;left:${pct(h)};transform:translateX(-50%);font-size:${major?'0.58':'0.48'}rem;color:var(--muted);font-weight:${major?'600':'400'};white-space:nowrap">${hour}h</div>`;
   }
-  // Noms de colonnes, puis la graduation des heures juste en dessous.
+  // Column names, then the hour ruler just below.
   const th = 'font-size:0.64rem;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:0.04em;flex-shrink:0';
   const colHeader = `<div style="display:flex;align-items:flex-end;gap:${GAP};padding:0 0 4px">
     <div class="hx-date" style="width:${W.date};${th}">${t('hx_date')}</div>

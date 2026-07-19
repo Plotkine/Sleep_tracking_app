@@ -33,7 +33,7 @@ if (!fs.existsSync(path.join(SRC, ENTRY))) {
 fs.rmSync(DEST, { recursive: true, force: true });   // repartir propre : pas de fichier orphelin
 copyDir(SRC, DEST);
 
-// Garde-fou : sans index.html, Capacitor construirait une app blanche.
+// Guard rail: without index.html, Capacitor would build a blank app.
 if (!fs.existsSync(path.join(DEST, 'index.html'))) {
   console.error('✗ index.html absent après la copie.');
   process.exit(1);

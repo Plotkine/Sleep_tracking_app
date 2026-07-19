@@ -16,7 +16,7 @@ function updateSleepTarget(val) {
   renderStats();
 }
 
-// Cible de durée de sommeil (graphe en points) — "HH:MM" = durée, pas une heure d'horloge
+// Sleep duration target (dot chart) — "HH:MM" means a duration, not a clock time
 let durTarget = localStorage.getItem('durTarget') || '07:30';
 function durTargetH() {
   const [h, m] = durTarget.split(':').map(Number);
@@ -27,16 +27,16 @@ function updateDurTarget(val) {
   localStorage.setItem('durTarget', val);
   renderStats();
 }
-// La cible de durée se saisit en h + min : on la stocke au format "HH:MM"
+// The duration target is entered as h + min, and stored in "HH:MM" form
 function updateDurTargetParts() {
   const clamp = (v, max) => Math.max(0, Math.min(max, parseInt(v, 10) || 0));
   const h = clamp(document.getElementById('dur-target-h').value, 14);
   const m = clamp(document.getElementById('dur-target-m').value, 59);
   updateDurTarget(`${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}`);
 }
-// Chargement / enregistrement : passent par storage.js, qui choisit entre l'API
-// du serveur et le localStorage. Les noms sont conservés (saveToServer notamment)
-// car ils sont appelés depuis toute l'app.
+// Load / save: both go through storage.js, which picks between the server API and
+// localStorage. The names are kept (saveToServer in particular) because they are
+// called from all over the app.
 async function loadHabits() {
   habits = await storeLoad('habits');
 }
@@ -57,14 +57,14 @@ let editingId = null;
 
 let statsRange = 7;
 
-// `ev` est passé explicitement par le onclick : la variable globale `event` n'existe
-// pas dans tous les moteurs, et la WebView Android n'est pas une garantie.
+// `ev` is passed explicitly by the onclick: the global `event` does not exist in
+// every engine, and the Android WebView is no guarantee.
 function setRange(n, ev) {
   statsRange = n;
   document.querySelectorAll('.range-btn').forEach(b => b.classList.toggle('active', b === ev?.currentTarget));
   renderStats();
 }
 
-// Fenêtre du tableau de bord, en jours. Fixe : le sélecteur de plage n'existe que
+// Dashboard window, in days. Fixed: the range selector only exists
 // dans Statistiques (statsRange).
 let summaryRange = 7;

@@ -1,17 +1,17 @@
-// Onglet Tableau de bord : corrélations, nuage de points, texte de la mascotte.
+// Dashboard tab: correlations, scatter plot, mascot text.
 let _scatterId = 0;
 
-// Score en étoiles d'une corrélation, d'après |r|
+// Star score of a correlation, from |r|
 
 const sectionTitle = txt => `<div style="margin-bottom:6px"><span style="font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">${txt}</span></div>`;
 
-// Corrélations : calculées sur TOUTES les entrées, indépendamment des sélecteurs de
-// période. Servent à deux endroits — le tableau « Analyse de tes données » (onglet
-// Statistiques) et la phrase de la mascotte (Tableau de bord) — d'où l'extraction.
+// Correlations: computed over ALL entries, regardless of the range selectors. Used in
+// two places — the "Your data analysed" table (Statistics tab) and the mascot sentence
+// (Dashboard) — hence the extraction.
 function buildCorrelations(opts = {}) {
-  // `excludeDate` retire une journée du calcul. Sert à la prédiction de la mascotte :
-  // prédire la forme d'un jour à partir de corrélations qui contiennent déjà cette
-  // même forme la rendrait dépendante de ce qu'on cherche justement à prévoir.
+  // `excludeDate` drops one day from the computation. Used by the mascot prediction:
+  // predicting a day's form from correlations that already contain that very form
+  // would make it depend on the thing being predicted.
   const allSorted = [...entries]
     .filter(e => e.dateStr !== opts.excludeDate)
     .sort((a,b) => a.dateStr.localeCompare(b.dateStr));
@@ -31,9 +31,9 @@ function buildCorrelations(opts = {}) {
     return byDate[d.toISOString().split('T')[0]] ?? null;
   }
 
-  // Moyenne des n dernières nuits (entrée incluse), null si l'une manque — mêmes
-  // règles que la construction des paires, sinon prédiction et corrélation
-  // porteraient sur des grandeurs différentes.
+  // Mean of the last n nights (this entry included), null if one is missing — same
+  // rules as the pair building, otherwise the prediction and the correlation would
+  // rest on different quantities.
   function avgLastNights(e, n) {
     const ds = [];
     for (let k = 0; k < n; k++) {
@@ -50,11 +50,11 @@ function buildCorrelations(opts = {}) {
   // Veille      = même entrée (nuit J→J+1, forme J+1).
   // Avant-veille = entrée J-1 (nuit J-1→J, forme J+1).
   const p_dur1=[], p_dur2=[], p_onset=[], p_bed_dur=[];
-  // Moyennes glissantes de sommeil confrontées à la forme : une seule mauvaise nuit
-  // pèse moins qu'une dette accumulée, que ces moyennes rendent visible.
+  // Rolling sleep averages set against the form: one bad night weighs less than an
+  // accumulated debt, which these averages make visible.
   const p_durAvg2=[], p_durAvg3=[], p_durAvg5=[];
-  // Heure de coucher → durée de la nuit : indépendant de la forme,
-  // donc calculé sur toutes les entrées, y compris celles sans forme encodée.
+  // Bedtime → night duration: independent of the form, so computed over every entry,
+  // including those with no form recorded.
   allSorted.forEach(e => {
     const dur = sleepDuration(e); if (dur === null) return;
     const sl = normalizeSleeps(e)[0];
@@ -72,16 +72,16 @@ function buildCorrelations(opts = {}) {
     // durée avant-veille : entrée J-1
     const d2 = p1 ? sleepDuration(p1) : null;
     if (d2 !== null) p_dur2.push([d2, score]);
-    // heure d'endormissement veille : même entrée
+    // previous night's sleep onset: same entry
     const sl = normalizeSleeps(e)[0];
     const t = sl && (sl.sleepStart || sl.bed || sl.bedtime);
     if (t) {
       const [h, m] = t.split(':').map(Number);
       p_onset.push([h >= 20 ? h+m/60 : h+m/60+24, score]);
     }
-    // Moyennes des n dernières nuits précédant cette forme, entrée J incluse. Le point
-    // n'est retenu que si les n nuits sont encodées : une moyenne calculée sur un
-    // nombre variable de nuits ne serait pas comparable d'un point à l'autre.
+    // Means of the n nights preceding this form, entry D included. The point is kept
+    // only if all n nights are recorded: a mean computed over a varying number of
+    // nights would not be comparable from one point to the next.
     [[2, p_durAvg2], [3, p_durAvg3], [5, p_durAvg5]].forEach(([n, out]) => {
       const ds = [];
       for (let k = 0; k < n; k++) {
@@ -200,7 +200,7 @@ function buildCorrelations(opts = {}) {
   const corrSorted = corrList.map(c=>({...c, abs:Math.abs(pearson(c.pairs.map(p=>p[0]),c.pairs.map(p=>p[1]))??0)}))
                              .sort((a,b)=>b.abs-a.abs);
 
-  // Mini nuage de points illustrant une corrélation : points bruts + droite de régression
+  // Mini scatter plot illustrating a correlation: raw points + regression line
   function scatterSVG(c) {
     const pts = c.pairs;
     if (pts.length < 3) return '';
@@ -222,14 +222,14 @@ function buildCorrelations(opts = {}) {
       : durColor(v);
     const yLbl = v => c.yType === 'form' ? (VLABEL[RSCORE_INV[Math.round(v)]] ?? '') : fmtH(v);
 
-    // Droite des moindres carrés — donne le sens du lien d'un coup d'œil
+    // Least-squares line — gives the direction of the link at a glance
     const n = pts.length;
     const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
     const den = xs.reduce((s,x)=>s+(x-mx)**2, 0);
     const slope = den ? xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my), 0)/den : 0;
     const clipId = 'sc' + (_scatterId++);
 
-    // Étiquette au survol : cercle transparent plus large pour viser confortablement
+    // Hover label: a wider transparent circle, so it is comfortable to aim at
     const yFull = v => c.yType === 'form' ? (VNAME[RSCORE_INV[Math.round(v)]] ?? '–') : fmtH(v);
     const dots = pts.map(([x,y]) => {
       const cx = px(x).toFixed(1), cy = py(y).toFixed(1);
@@ -285,7 +285,7 @@ function buildCorrelations(opts = {}) {
       </div>`;
   }
 
-  // ★★★ (|r| ≥ 0.5) affichées d'office ; ★★☆ (0.3 ≤ |r| < 0.5) repliées derrière un clic
+  // ★★★ (|r| ≥ 0.5) shown by default; ★★☆ (0.3 ≤ |r| < 0.5) folded behind a click
   const eligible = corrSorted.filter(c => c.pairs.length >= 4);
   const strongCharts = eligible.filter(c => c.abs >= 0.5).map(bucketChart).join('');
   const mediumCharts = eligible.filter(c => c.abs >= 0.3 && c.abs < 0.5).map(bucketChart).join('');
@@ -316,7 +316,7 @@ function buildCorrelations(opts = {}) {
   return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard };
 }
 
-// Écrit le tableau d'analyse dans l'onglet Statistiques.
+// Writes the analysis table into the Statistics tab.
 function renderCorrelations() {
   const box = document.getElementById('corr-view');
   if (box) box.innerHTML = buildCorrelations().html;
@@ -410,18 +410,18 @@ function renderSummary() {
     const s = Math.sqrt(arr.reduce((s,x)=>s+(x-m)**2,0)/arr.length) || 1;
     return (v - m) / s;
   }
-  // Seuil « corrélation moyenne » — le même que celui du tableau d'analyse (★★☆).
+  // "Medium correlation" threshold — the same one the analysis table uses (★★☆).
   const MIN_R = 0.3, MIN_N = 4, MAX_PRED = 3;
 
-  // Prédiction de la mascotte. Deux exigences :
-  //  · elle ne doit pas dépendre de la forme encodée pour la journée prédite, d'où
-  //    le recalcul des corrélations en excluant cette date ;
-  //  · elle ne s'appuie que sur les MAX_PRED liens les plus marqués, et seulement
-  //    s'ils atteignent MIN_R — sans quoi il n'y a pas de prédiction du tout.
-  // La prédiction porte sur la forme d'AUJOURD'HUI, donc sur l'entrée datée d'hier :
-  // c'est elle qui porte la nuit écoulée. S'ancrer sur la dernière entrée existante,
-  // comme avant, datait les prédicteurs par rapport à elle — « nuit avant-veille »
-  // désignait alors une nuit vieille de quatre jours si les récentes manquaient.
+  // Mascot prediction. Two requirements:
+  //  · it must not depend on the form recorded for the day being predicted, hence the
+  //    correlations are recomputed with that date excluded;
+  //  · it rests only on the MAX_PRED strongest links, and only if they reach MIN_R —
+  //    otherwise there is no prediction at all.
+  // The prediction is about TODAY's form, so about the entry dated yesterday: that is
+  // the one carrying the night just gone. Anchoring on the most recent entry, as before,
+  // dated every predictor relative to it — "night before last" then pointed at a night
+  // four days old whenever the recent ones were missing.
   const predEntry = byDate[yest] ?? null;
 
   let predComment = '';
@@ -457,7 +457,7 @@ function renderSummary() {
       const totalW = contribs.reduce((s,c)=>s+c.w, 0);
       const sig    = contribs.reduce((s,c)=>s+c.signal*c.w, 0) / totalW;
 
-      // Une seule phrase : verdict, puis les raisons en apposition — pas de parenthèses imbriquées
+      // A single sentence: verdict, then the reasons in apposition — no nested parentheses
       const needsRest = sig <= -0.8;
       const verdict = sig >  0.8 ? t('m_v5')
                     : sig >  0.25? t('m_v4')
@@ -474,7 +474,7 @@ function renderSummary() {
         else if (hDone/hTotal <= 0.25) reasons.push(t('m_hab_bad'));
       }
 
-      // Confrontation à la forme réellement encodée pour cette journée
+      // Compared with the form actually recorded for that day
       const actualKey = predEntry.dayForm;
       let check = '';
       if (actualKey && RSCORE[actualKey]) {
@@ -484,8 +484,8 @@ function renderSummary() {
         check = t('m_encoded')(VNAME[actualKey], how);
       }
 
-      // Seule la prévision est en gras ; la comparaison avec la forme encodée et le
-      // conseil éventuel restent en corps normal, à la suite.
+      // Only the forecast is bold; the comparison with the recorded form and any
+      // advice stay in normal body text, after it.
       const predSentence = verdict + (reasons.length ? ' : ' + reasons.join(', ') : '') + '.';
       predComment = `<strong>${predSentence}</strong>`
                   + check
@@ -524,7 +524,7 @@ function renderSummary() {
   const habCol3 = ratioColor(avgHab3);
   const avgHabHtml = avgHab3!==null ? `<span style="color:${habCol3}">${Math.round(avgHab3*100)}%</span>` : '–';
 
-  // Sur quoi se concentrer : le lien le plus marqué de l'analyse des corrélations
+  // What to focus on: the strongest link in the correlation analysis
   const focusCorr = corrSorted.find(c => c.focus && c.abs >= 0.3 && c.pairs.length >= MIN_N);
   let encouragement;
   if (focusCorr) {
@@ -534,9 +534,9 @@ function renderSummary() {
     encouragement = t('m_nofocus');
   }
 
-  // Rappel des habitudes suivies — sans statut, juste pour les garder en tête.
-  // Prolonge le texte du résumé : même corps, une phrase d'amorce puis une puce
-  // par habitude, sans encadré ni séparateur.
+  // Reminder of the tracked habits — no status, just to keep them in mind.
+  // Extends the summary text: same body size, a lead-in sentence then one bullet per
+  // habit, with no box and no separator.
   const trackedNames = habits.filter(h => h.tracked !== false).map(h => h.name);
   const habitsReminder = trackedNames.length ? `
     <p style="font-size:0.8rem;color:var(--text);margin:6px 0 0">${t('m_tracking')}</p>
@@ -566,8 +566,8 @@ function renderSummary() {
     <div class="stat-card"><div class="sv">${avgHabHtml}</div><div class="sl">${t('c_hab_avg')}</div></div>
   </div>`;
 
-  // Aperçu des 3 derniers jours — même rendu que l'aperçu de la Saisie, réuni dans un seul encart
-  // Du plus récent au plus ancien
+  // Preview of the last 3 days — same rendering as the Entry preview, gathered in one card
+  // Newest first
   const prevDays = [];
   { const d = new Date(yest+'T12:00:00');
     for (let i = 0; i < 3; i++) {
@@ -576,18 +576,18 @@ function renderSummary() {
       d.setDate(d.getDate() - 1);
     } }
 
-  // Pas de titre propre : l'aperçu vit sous la section « 3 derniers jours », qu'il partage
-  // avec les encarts de moyennes.
-  // Libellé, barre et durée sont alignés sur la barre elle-même (voir .sum-prev-row) ;
-  // graduation et légende sont extraites des lignes après rendu, dans le pied de l'encart.
+  // No heading of its own: the preview lives under the "Last 3 days" section, which it
+  // shares with the average cards.
+  // Label, bar and duration are aligned on the bar itself (see .sum-prev-row); the ruler
+  // and legend are pulled out of the rows after rendering, into the card's footer.
   const previewCard = `
     <div class="chart-card sum-preview" style="margin-bottom:12px">
       ${prevDays.map(({ds, e}, i) => {
-        // La nuit datée de la veille porte la forme de la journée d'aujourd'hui
+        // The night dated yesterday carries today's day form
         const label = ['Aujourd\'hui', 'Hier', 'Avant-hier'][i];
         const dateTip = new Date(ds+'T12:00:00').toLocaleDateString(t('locale'), {weekday:'long', day:'2-digit', month:'long'});
         return `<div class="sum-prev-row"${i ? ' style="margin-top:6px"' : ''}>
-            <span class="sum-prev-lbl" title="Nuit du ${dateTip}">${label}</span>
+            <span class="sum-prev-lbl" title="${t('night_of_one')(dateTip)}">${label}</span>
             <div id="sum-prev-${i}" style="flex:1;min-width:0">${e ? '' : `<p class="sum-prev-empty">${t('none_day')}</p>`}</div>
           </div>`;
       }).join('')}
@@ -598,13 +598,13 @@ function renderSummary() {
       <div id="sum-prev-legend"></div>
     </div>`;
 
-  // « Analyse de tes données » a migré vers l'onglet Statistiques (renderCorrelations).
+  // "Your data analysed" moved to the Statistics tab (renderCorrelations).
   el.innerHTML = sectionTitle(t('sec_now')) + mascotCard + miniCards + previewCard;
 
   prevDays.forEach(({e}, i) => { if (e) renderTL(e, `sum-prev-${i}`, { showTimes: true }); });
-  // renderTL réémet graduation et légende à chaque appel, à l'intérieur de la ligne :
-  // on n'en garde qu'un jeu, déplacé dans le pied de l'encart pour que chaque ligne
-  // garde la même hauteur et que libellé, barre et durée restent alignés.
+  // renderTL re-emits the ruler and legend on every call, inside the row it renders
+  // into: only one set is kept, moved into the card's footer so every row keeps the
+  // same height and label, bar and duration stay aligned.
   const prevBox = el.querySelector('.sum-preview');
   if (prevBox) {
     const moveLast = (sel, destId) => {

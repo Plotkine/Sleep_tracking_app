@@ -1,17 +1,17 @@
-// Rendu des timelines 24 h (20:00 → 20:00).
-// renderTL = version détaillée (Saisie, tableau de bord) · renderTLCompact = version dense (Historique).
+// 24 h timeline rendering (20:00 → 20:00).
+// renderTL = detailed version (Entry, dashboard) · renderTLCompact = dense version (History).
 function fracDur(d) {
   if (d < 0) d += 1;
-  return fmtH(d * 24);   // même règle que partout ailleurs : « 7h30 », « 30min »
+  return fmtH(d * 24);   // same rule as everywhere else: "7h30", "30min"
 }
 
-// Étiquettes d'heures d'une timeline, partagées par l'aperçu du tableau de bord
-// (renderTL) et l'historique (renderTLCompact).
+// Hour stamps for a timeline, shared by the dashboard preview
+// (renderTL) and History (renderTLCompact).
 //
-// Deux blocs qui se touchent — sommeil puis demi-sommeil, par exemple — forment une
-// seule période encodée : on ne date que ses bornes extérieures, sinon l'heure de la
-// jointure s'affiche deux fois au même endroit. Une nuit réellement coupée reste,
-// elle, deux périodes et garde ses quatre heures.
+// Two touching blocks — sleep then half-sleep, say — form a single recorded period:
+// only its outer bounds are stamped, otherwise the junction time is printed twice at
+// the same spot. A genuinely interrupted night stays two periods and keeps all four
+// times.
 function periodStamps(periods, pct) {
   if (!periods.length) return '';
   const EPS = 1e-6;
@@ -25,13 +25,13 @@ function periodStamps(periods, pct) {
   });
   const stamp = (f, txt) => `<div style="position:absolute;left:${pct(f)};top:0;transform:translateX(-50%);` +
     `font-size:0.55rem;color:var(--muted);white-space:nowrap">${txt}</div>`;
-  // Sous cette largeur les deux heures se chevaucheraient : on n'en pose qu'une,
-  // centrée, qui porte les deux bornes.
+  // Below this width the two times would overlap: a single centred stamp carries
+  // both bounds instead.
   const MIN_W = 0.07;
   let out = '';
   merged.forEach(p => {
-    // Une sieste ne porte que son heure de début : elle est courte, et sa fin se
-    // lit à la longueur du bloc.
+    // A nap only carries its start time: it is short, and its end can be read from
+    // the block's length.
     if (p.isNap) {
       if (p.startT) out += stamp(p.s, fmtClock(p.startT));
     } else if (p.e - p.s < MIN_W) {
@@ -44,9 +44,9 @@ function periodStamps(periods, pct) {
   return out;
 }
 
-// `opts.showTimes` : affiche l'heure de début et de fin de chaque période au-dessus
-// du bloc, et déplace la durée à l'intérieur de la barre pour libérer la place.
-// Utilisé par l'aperçu du tableau de bord ; la Saisie garde le rendu d'origine.
+// `opts.showTimes`: prints each period's start and end above the block, and moves the
+// duration inside the bar to free up the space.
+// Used by the dashboard preview; Entry keeps the original rendering.
 function renderTL(e, containerId, opts = {}) {
   const el = document.getElementById(containerId);
   if (!el) return;
@@ -73,11 +73,11 @@ function renderTL(e, containerId, opts = {}) {
     bars += `<div style="position:absolute;left:${pct(s)};width:${w.toFixed(3)}%;height:100%;` +
       `background:${bg};cursor:default" title="${startT} → ${endT}"></div>`;
     if (showTimes) {
-      // Durée dans la barre : texte sombre sur le demi-sommeil (bleu clair), clair sur le sommeil plein.
+      // Duration inside the bar: dark text on half-sleep (light blue), light on full sleep.
       bars += `<div style="position:absolute;left:${pct(cx)};top:50%;transform:translate(-50%,-50%);` +
         `font-size:0.58rem;font-weight:700;color:${half ? '#1a2535' : '#ffffff'};white-space:nowrap;` +
         `pointer-events:none;z-index:2">${dur}</div>`;
-      // Les heures sont posées plus bas, une fois les blocs contigus fusionnés.
+      // Times are stamped further down, once touching blocks have been merged.
       periods.push({ s, e: s + d, startT, endT, isNap });
     } else {
       arrows += `<div style="position:absolute;left:${pct(cx)};bottom:1px;transform:translateX(-50%);` +
@@ -94,8 +94,8 @@ function renderTL(e, containerId, opts = {}) {
     const startT = sl.sleepStart || sl.bed || sl.bedtime || '';
     const endT   = sl.sleepEnd   || sl.wakeup || '';
     if (s !== null && en !== null) drawBlock(s, en, sl.halfSleep, startT, endT);
-    // En mode heures, les repères ↓ ↑ passent dans la barre (comme renderTLCompact) :
-    // la bande du haut ne porte alors que les heures, et peut donc coller à la barre.
+    // In times mode the ↓ ↑ markers move into the bar (as renderTLCompact already did):
+    // the top band then carries only the times, and can sit close to the bar.
     const marker = (f, glyph, tip) => showTimes
       ? `<div style="position:absolute;left:${pct(f)};bottom:1px;transform:translateX(-50%);font-size:11px;line-height:1;z-index:3;pointer-events:none" title="${tip}">${glyph}</div>`
       : `<div style="position:absolute;left:${pct(f)};bottom:0;transform:translateX(-50%);font-size:13px;line-height:1" title="${tip}">${glyph}</div>`;
@@ -147,9 +147,9 @@ function renderTL(e, containerId, opts = {}) {
   `;
 }
 
-// `opts.showTimes` : même annotation que l'aperçu du tableau de bord — heures aux
-// bornes de chaque période encodée, durée à l'intérieur de la barre. Utilisé par
-// l'historique, qui remplace ainsi sa colonne « Horaires ».
+// `opts.showTimes`: same annotation as the dashboard preview — times at the bounds of
+// each recorded period, duration inside the bar. Used by History, which thereby drops
+// its "Times" column.
 function renderTLCompact(e, containerId, opts = {}) {
   const el = document.getElementById(containerId);
   if (!el) return;
