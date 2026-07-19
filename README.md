@@ -7,10 +7,11 @@ Every morning you record when you went to bed, when you fell asleep and when you
 <p align="center">
   <img src="docs/screenshots/thumb-summary.png"    width="128" alt="Dashboard">
   <img src="docs/screenshots/thumb-entry.png"      width="128" alt="Recording a night">
-  <img src="docs/screenshots/thumb-statistics.png" width="128" alt="Statistics">
+  <img src="docs/screenshots/thumb-statistics-1.png" width="128" alt="Statistics, top">
+  <img src="docs/screenshots/thumb-statistics-2.png" width="128" alt="Statistics, correlations">
   <img src="docs/screenshots/thumb-habits.png"     width="128" alt="Goals and habits">
 </p>
-<p align="center"><em>Dashboard · Recording a night · Statistics · Goals and habits</em></p>
+<p align="center"><em>Dashboard · Recording a night · Statistics · Correlations · Goals and habits</em></p>
 
 It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
