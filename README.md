@@ -16,7 +16,11 @@ The reason is not that pills do not work, but *how* they work over time. Trials 
 
 Recording also has an effect of its own: it turns vague impressions into something you can look at. People routinely believe they slept far worse than they did, and a written trace is what corrects that.
 
-**What this app is, and is not.** It follows the structure of the [Réseau Morphée](https://reseau-morphee.fr/) sleep diary and computes correlations over your own data. It is a diary and a mirror — not a diagnosis, not a therapy, and no substitute for a doctor. Correlation is not causation, and a few dozen nights is a small sample. If your sleep worries you, take the diary to a professional: that is exactly what it is good for.
+**What this app adds: correlations computed on your own data.** Beyond recording, it measures — night after night — what actually goes with your good and bad days. Not generic advice: **your** numbers. It correlates your day form against how long you slept, the average of your last 2, 3 and 5 nights, what time you fell asleep and what time you went to bed.
+
+And, crucially, **against the habits you define yourself**. You add the ones you care about — no screens before bed, exercise, no late coffee, whatever you are trying to hold — you tick them off each day, and you say whether each one should affect the night that follows or the one after. The app then computes a separate correlation for every habit and ranks them by strength, so you can see which of your own rules actually make a difference for you, and which make none.
+
+**What it is not.** It follows the structure of the [Réseau Morphée](https://reseau-morphee.fr/) sleep diary. It is a diary and a mirror — not a diagnosis, not a therapy, and no substitute for a doctor. Correlation is not causation, and a few dozen nights is a small sample: the app shows the number of pairs behind every figure for that reason. If your sleep worries you, take the diary to a professional: that is exactly what it is good for.
 
 It works on an **Android phone** and in a **web browser**. Everything stays on your device: nothing is sent anywhere, no account, no sign-up, and it works without an internet connection.
 
