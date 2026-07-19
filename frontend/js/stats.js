@@ -174,22 +174,20 @@ function renderStats() {
     }};
   }
 
-  // Inline plugin: value labels above each dot.
-  // White on the dark theme — the dot already carries the colour, so colouring the
-  // label too made faint bands hard to read. On the light theme white would vanish
-  // into the card, hence the text colour there.
-  const labelColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#2c3e50';
-  function dotLabels(_colorFn, formatFn) {
+  // Inline plugin: value labels above each dot, in the dot's own colour, so a value
+  // and its band read as one.
+  function dotLabels(colorFn, formatFn) {
     return { id:'dotLabels', afterDatasetsDraw(chart) {
       const { ctx } = chart;
       ctx.save();
       ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-      ctx.fillStyle = labelColor;
       chart.data.datasets.forEach((ds, i) => {
         chart.getDatasetMeta(i).data.forEach((pt, j) => {
-          if (ds.data[j] == null) return;
-          ctx.fillText(formatFn(ds.data[j]), pt.x, pt.y - 6);
+          const v = ds.data[j];
+          if (v == null) return;
+          ctx.fillStyle = colorFn(v);
+          ctx.fillText(formatFn(v), pt.x, pt.y - 6);
         });
       });
       ctx.restore();
