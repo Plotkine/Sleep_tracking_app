@@ -683,6 +683,7 @@ nav a { white-space: nowrap; }
 .rotate-hint {
   display: none;
   align-items: center;
+  justify-content: flex-end;   /* calée à droite, hors du chemin du contenu */
   gap: 8px;
   font-size: 0.74rem;
   color: var(--muted);
