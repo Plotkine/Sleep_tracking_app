@@ -16,7 +16,7 @@ Two ways, independent of each other. Pick either.
 
 Nothing to install beyond the app itself.
 
-1. From your phone, open [releases](https://github.com/Plotkine/Sleep_tracking_app/releases) and download `agenda-sommeil-v1.0-debug.apk`.
+1. From your phone, open the [latest release](https://github.com/Plotkine/Sleep_tracking_app/releases/latest) and download `agenda-sommeil-debug.apk`.
 2. Tap the downloaded file.
 3. Android will refuse the first time and say it is *not allowed to install unknown apps from this source*. Tap **Settings** in that message, allow it for the app you downloaded with, then tap the file again.
 4. You may also see a Play Protect warning, because the app does not come from the Play Store: **More details → Install anyway**.
