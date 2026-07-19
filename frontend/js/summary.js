@@ -584,24 +584,20 @@ function renderSummary() {
     <div class="chart-card sum-preview" style="margin-bottom:12px">
       ${prevDays.map(({ds, e}, i) => {
         // The night dated yesterday carries today's day form
-        const label = ['Aujourd\'hui', 'Hier', 'Avant-hier'][i];
+        const label = [t('d_today'), t('d_yesterday'), t('d_before')][i];
         const dateTip = new Date(ds+'T12:00:00').toLocaleDateString(t('locale'), {weekday:'long', day:'2-digit', month:'long'});
         return `<div class="sum-prev-row"${i ? ' style="margin-top:6px"' : ''}>
             <span class="sum-prev-lbl" title="${t('night_of_one')(dateTip)}">${label}</span>
             <div id="sum-prev-${i}" style="flex:1;min-width:0">${e ? '' : `<p class="sum-prev-empty">${t('none_day')}</p>`}</div>
           </div>`;
       }).join('')}
-      <div class="sum-prev-row sum-prev-foot">
-        <span class="sum-prev-lbl"></span>
-        <div id="sum-prev-ruler" style="flex:1;min-width:0"></div>
-      </div>
       <div id="sum-prev-legend"></div>
     </div>`;
 
   // "Your data analysed" moved to the Statistics tab (renderCorrelations).
   el.innerHTML = sectionTitle(t('sec_now')) + mascotCard + miniCards + previewCard;
 
-  prevDays.forEach(({e}, i) => { if (e) renderTL(e, `sum-prev-${i}`, { showTimes: true }); });
+  prevDays.forEach(({e}, i) => { if (e) renderTL(e, `sum-prev-${i}`, { showTimes: true, hideHours: true }); });
   // renderTL re-emits the ruler and legend on every call, inside the row it renders
   // into: only one set is kept, moved into the card's footer so every row keeps the
   // same height and label, bar and duration stay aligned.
@@ -614,7 +610,6 @@ function renderSummary() {
       const dest = document.getElementById(destId);
       if (keep && dest) dest.appendChild(keep);
     };
-    moveLast('.tl-hlabels', 'sum-prev-ruler');
     moveLast('.tl-legend',  'sum-prev-legend');
   }
 }

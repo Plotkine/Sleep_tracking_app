@@ -6,6 +6,7 @@ const S = {
     nav_saisie:'Saisie', nav_hist:'Historique', nav_stats:'Statistiques', nav_options:'Options',
     display_card:'Affichage', lbl_theme:'Thème', lbl_lang:'Langue',
     // --- Tableau de bord (mascotte, cartes) ---
+    d_today:'Aujourd\'hui', d_yesterday:'Hier', d_before:'Avant-hier',
     sec_now:'Situation actuelle', sec_3d:'3 derniers jours', sec_analysis:'Analyse de tes données',
     last_form:'Dernière forme enregistrée', no_form:'Aucune forme enregistrée',
     m_first:'Enregistre ta première nuit pour voir une prédiction.',
@@ -123,6 +124,7 @@ const S = {
     nav_saisie:'Entry', nav_hist:'History', nav_stats:'Statistics', nav_options:'Settings',
     display_card:'Display', lbl_theme:'Theme', lbl_lang:'Language',
     // --- Dashboard (mascot, cards) ---
+    d_today:'Today', d_yesterday:'Yesterday', d_before:'Two days ago',
     sec_now:'Current situation', sec_3d:'Last 3 days', sec_analysis:'Your data analysed',
     last_form:'Last recorded form', no_form:'No form recorded',
     m_first:'Record your first night to see a prediction.',

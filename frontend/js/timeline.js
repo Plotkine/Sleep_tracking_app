@@ -118,9 +118,11 @@ function renderTL(e, containerId, opts = {}) {
       `font-size:0.65rem;color:#e67e22;font-weight:700;z-index:2;pointer-events:none" title="${d}">S</div>`;
   });
 
-  // Hour labels — every 1h; major at every 4h
+  // Hour labels — every 1h; major at every 4h.
+  // `opts.hideHours` drops them entirely: the dashboard preview stamps each recorded
+  // period with its own times, so a full ruler underneath only adds noise.
   let labels = '';
-  for (let h = 0; h <= 24; h++) {
+  for (let h = 0; opts.hideHours ? false : h <= 24; h++) {
     const hour = (20 + h) % 24;
     const major = h % 4 === 0;
     labels += `<div style="position:absolute;left:${pct(h/24)};transform:translateX(-50%);` +
