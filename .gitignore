@@ -3,6 +3,7 @@ data/
 
 # Notes de travail locales
 CLAUDE.md
+.claude/
 
 # Python
 __pycache__/
