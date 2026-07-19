@@ -31,9 +31,11 @@ const S = {
     c_form_avg:'Forme moy.', c_hab_avg:'Habitudes respectées moy.',
     none_period:'Aucune nuit enregistrée sur cette période.', none_day:'Aucune donnée encodée.',
     corr_v1:'Variable 1', corr_v2:'Variable 2', corr_r:'Corrélation', corr_n:'Paires',
-    corr_insuf:'données insuffisantes', corr_more:'Voir les analyses des corrélations moyennes',
+    corr_insuf:'données insuffisantes', corr_open:'Voir le détail',
     // --- Historique ---
     hx_date:'Date', hx_night:'Déroulé de la nuit', hx_notes:'Notes', hx_none:'Non encodée',
+    hx_quick: d => `Saisie rapide — ${d}`,
+    rotate_hint:'Tourne ton téléphone pour tout voir',
     // --- Habitudes ---
     hb_none:'Aucune habitude suivie. Gérez-les dans l\'onglet Objectifs.',
     hb_tracked:'Suivies', hb_untracked:'Pas suivies', hb_notenc:'Non encodé',
@@ -80,7 +82,7 @@ const S = {
     lbl_h:'h', lbl_min:'min',
     form_card:'Forme de la journée',
     form_subtitle:'(TM Très Mauvaise · M Mauvaise · Moy Moyenne · B Bonne · TB Très Bonne)',
-    notes_card:'📝 Remarques', notes_ph:'Médicaments, sport le soir, fièvre, stress…',
+    notes_card:'📝 Remarques', notes_ph:'Fièvre, décalage horaire, soirée tardive, déménagement, examen demain…',
     save_btn:'Enregistrer les données', edit_btn:'Modifier les données',
     // Sauvegarde (import / export)
     habits_card:'Habitudes', add_habit:'+ Ajouter',
@@ -152,9 +154,11 @@ const S = {
     c_form_avg:'Avg. form', c_hab_avg:'Avg. habits kept',
     none_period:'No night recorded over this period.', none_day:'No data recorded.',
     corr_v1:'Variable 1', corr_v2:'Variable 2', corr_r:'Correlation', corr_n:'Pairs',
-    corr_insuf:'not enough data', corr_more:'Show medium-strength correlations',
+    corr_insuf:'not enough data', corr_open:'Show the detail',
     // --- History ---
     hx_date:'Date', hx_night:'The night', hx_notes:'Notes', hx_none:'Not recorded',
+    hx_quick: d => `Quick entry — ${d}`,
+    rotate_hint:'Turn your phone to see it all',
     // --- Habits ---
     hb_none:'No habit tracked. Manage them in the Goals tab.',
     hb_tracked:'Tracked', hb_untracked:'Not tracked', hb_notenc:'Not recorded',
@@ -201,7 +205,7 @@ const S = {
     lbl_h:'h', lbl_min:'min',
     form_card:'Day form',
     form_subtitle:'(TM Very Bad · M Bad · Moy Average · B Good · TB Very Good)',
-    notes_card:'📝 Notes', notes_ph:'Medication, evening exercise, fever, stress…',
+    notes_card:'📝 Notes', notes_ph:'Fever, jet lag, late party, moving house, exam tomorrow…',
     save_btn:'Save data', edit_btn:'Update data',
     habits_card:'Habits', add_habit:'+ Add',
     backup_card:'Backup',

@@ -46,21 +46,31 @@ function renderHistory() {
   const spacer = `<button class="edit-btn" style="visibility:hidden;pointer-events:none" aria-hidden="true">${editSvg}</button>`
                + `<button class="del-btn" style="visibility:hidden;pointer-events:none" aria-hidden="true">${delSvg}</button>`;
 
-  const emptyRow = ds => `
-      <div style="display:flex;align-items:center;gap:${GAP};padding:4px 0;opacity:0.45">
+  // Une saisie rapide ne porte qu'une durée totale : il n'y a aucun horaire à
+  // dessiner, et une barre vide laissait croire à une nuit sans sommeil.
+  const dashedRow = (ds, text, dim, tail) => `
+      <div style="display:flex;align-items:center;gap:${GAP};padding:4px 0${dim ? ';opacity:0.45' : ''}">
         <div class="hx-date" style="width:${W.date};font-size:0.76rem;font-weight:600;flex-shrink:0;white-space:nowrap">${shortDate(ds)}</div>
         <div style="flex:1;min-width:50px;height:41px;display:flex;align-items:center;gap:8px">
           <div style="flex:1;border-top:1px dashed var(--border)"></div>
-          <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap;font-style:italic">${t('hx_none')}</span>
+          <span style="font-size:0.72rem;color:var(--muted);white-space:nowrap;font-style:italic">${text}</span>
           <div style="flex:1;border-top:1px dashed var(--border)"></div>
         </div>
-        <div class="hx-notes" style="width:${W.notes};flex-shrink:0"></div>
-        ${spacer}
+        ${tail}
       </div>`;
+
+  const emptyRow = ds => dashedRow(ds, t('hx_none'), true,
+    `<div class="hx-notes" style="width:${W.notes};flex-shrink:0"></div>${spacer}`);
 
   const rows = allDates.map(ds => {
     const e = byDate[ds];
     if (!e) return emptyRow(ds);
+    if (e.quickDuration != null) {
+      const notes = `<div class="hx-notes" style="width:${W.notes};flex-shrink:0;font-size:0.72rem;color:var(--muted);font-style:italic;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;cursor:default" title="${(e.notes||'').replace(/"/g,'&quot;')}">${e.notes?'📝 '+e.notes:'/'}</div>`
+        + `<button class="edit-btn" onclick="editEntry(${e.id})" title="${t('act_edit')}">${editSvg}</button>`
+        + `<button class="del-btn" data-id="${e.id}" onclick="deleteEntry(${e.id})" title="${t('act_delete')}">${delSvg}</button>`;
+      return dashedRow(e.dateStr, t('hx_quick')(fmtH(e.quickDuration)), false, notes);
+    }
     return `
       <div style="display:flex;align-items:center;gap:${GAP};padding:4px 0">
         <div class="hx-date" style="width:${W.date};font-size:0.76rem;font-weight:600;flex-shrink:0;white-space:nowrap">${shortDate(e.dateStr)}</div>
@@ -95,8 +105,9 @@ function renderHistory() {
     <div class="hx-notes" style="width:${W.notes};flex-shrink:0"></div>
     ${spacer}
   </div>`;
-  el.innerHTML = legend + colHeader + hourHeader + `<div>${rows}</div>`;
-  allDates.forEach(ds => { const e = byDate[ds]; if (e) renderTLCompact(e, `ht-${e.id}`, { showTimes: true }); });
+  const rotateHint = `<div class="rotate-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg><span>${t('rotate_hint')}</span></div>`;
+  el.innerHTML = rotateHint + legend + colHeader + hourHeader + `<div>${rows}</div>`;
+  allDates.forEach(ds => { const e = byDate[ds]; if (e && e.quickDuration == null) renderTLCompact(e, `ht-${e.id}`, { showTimes: true }); });
 }
 
 // ---- Stats ----

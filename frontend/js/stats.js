@@ -38,6 +38,11 @@ function renderStats() {
   // Helpers partagés (sleepOnsetH / durColor / onsetColor / fmtDecH) : définis globalement
   const tH = sleepTargetH();
 
+  // 30 jours ou « Tout » : les frises et les graphes dépassent largement un écran
+  // de téléphone en portrait.
+  { const box = document.getElementById('stats-rotate');
+    if (box) box.innerHTML = (statsRange === 30 || statsRange === 0) ? `<div class="rotate-hint"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="2" width="10" height="20" rx="2"/><line x1="10.5" y1="18.5" x2="13.5" y2="18.5"/></svg><span>${t('rotate_hint')}</span></div>` : ''; }
+
   renderFormViz(days, allDates);
   renderHabitsViz(days, 'habits-viz', allDates);
 
@@ -148,29 +153,44 @@ function renderStats() {
     }};
   }
 
-  // Inline plugin: value labels above each dot
-  function dotLabels(colorFn, formatFn) {
+  // Inline plugin: value labels above each dot.
+  // White on the dark theme — the dot already carries the colour, so colouring the
+  // label too made faint bands hard to read. On the light theme white would vanish
+  // into the card, hence the text colour there.
+  const labelColor = document.documentElement.classList.contains('dark') ? '#ffffff' : '#2c3e50';
+  function dotLabels(_colorFn, formatFn) {
     return { id:'dotLabels', afterDatasetsDraw(chart) {
       const { ctx } = chart;
       ctx.save();
       ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
       ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      ctx.fillStyle = labelColor;
       chart.data.datasets.forEach((ds, i) => {
         chart.getDatasetMeta(i).data.forEach((pt, j) => {
-          const v = ds.data[j];
-          if (v == null) return;
-          ctx.fillStyle = colorFn(v);
-          ctx.fillText(formatFn(v), pt.x, pt.y - 6);
+          if (ds.data[j] == null) return;
+          ctx.fillText(formatFn(ds.data[j]), pt.x, pt.y - 6);
         });
       });
       ctx.restore();
     }};
   }
 
+  // Largeur nécessaire pour que deux points restent lisibles. En dessous, le
+  // conteneur défile horizontalement au lieu de comprimer l'axe.
+  const MIN_PX_PER_POINT = 46;
+  function sizeChartArea(wrapId) {
+    const wrap = document.getElementById(wrapId);
+    const inner = wrap && wrap.querySelector('.chart-inner');
+    if (!inner) return;
+    const needed = allDates.length * MIN_PX_PER_POINT;
+    inner.style.width = needed > wrap.clientWidth ? needed + 'px' : '100%';
+  }
+
   const durData = days.map(e => { if(!e) return null; const d=sleepDuration(e); return d!==null?Math.round(d*100)/100:null; });
 
   // Duration chart — dots, with a configurable target line
   if (charts.dur) charts.dur.destroy();
+  sizeChartArea('c-dur-wrap');
   const tD = durTargetH();
   document.getElementById('dur-goal').innerHTML =
     `<span class="goal-dash"></span>${t('goal_label')} ${fmtH(tD)}`;
@@ -195,6 +215,7 @@ function renderStats() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: { displayColors: false, callbacks: { label: ctx => {
@@ -215,6 +236,7 @@ function renderStats() {
 
   // Sleep onset chart
   if (charts.sleep) charts.sleep.destroy();
+  sizeChartArea('c-sleep-wrap');
   const onsetData = days.map(sleepOnsetH);
   document.getElementById('sleep-goal').innerHTML =
     `<span class="goal-dash"></span>${t('goal_label')} ${fmtClock(sleepTarget)}`;
@@ -234,6 +256,7 @@ function renderStats() {
     },
     options: {
       responsive: true,
+      maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: { displayColors: false, callbacks: { label: ctx => {

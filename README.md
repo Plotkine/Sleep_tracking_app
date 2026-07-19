@@ -88,9 +88,13 @@ Every night since you started, one row per day, drawn to scale. Days you did not
 
 ### Understand what affects you
 
-Your sleep duration and bedtime plotted night after night against the goals you set, and a table showing which factors go together with your good days — the previous night's length, the average of the last few nights, what time you fell asleep, each habit you track. Strength is shown with stars, and the clearest links are explained with a small chart.
+Your sleep duration and bedtime plotted night after night against the goals you set, and a table showing which factors go together with your good days — the previous night's length, the average of the last few nights, what time you fell asleep, each habit you track. Strength is shown with stars, and the number of nights behind each figure is always visible.
 
 <img src="docs/screenshots/screen-statistics.png" width="460" alt="Statistics">
+
+Every correlation is listed, however weak — a value near zero is information too. Click any row and it unfolds: the same nights grouped into bands, next to a scatter plot of the raw points.
+
+<img src="docs/screenshots/screen-correlations.png" width="460" alt="Correlation table, one row expanded">
 
 ### Set goals and track habits
 

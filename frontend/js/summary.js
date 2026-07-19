@@ -122,20 +122,32 @@ function buildCorrelations(opts = {}) {
     });
   });
 
-  function rRow(label, with2, pairs) {
+  // Une ligne par corrélation, dépliable : son analyse détaillée s'affiche juste
+  // en dessous plutôt que toutes ensemble sous le tableau, où il fallait deviner
+  // à quelle ligne chacune se rapportait.
+  // Toute corrélation dont le r a pu être calculé est proposée, même faible : c'est
+  // au lecteur de juger, et une valeur proche de zéro est une information.
+  function rRow(c, idx) {
+    const { lbl: label, w2: with2, pairs } = c;
     const r = pearson(pairs.map(p=>p[0]), pairs.map(p=>p[1]));
+    const td = 'padding:3px 12px 3px 0;font-size:0.78rem';
     if (r === null) return `<tr>
-      <td style="padding:3px 12px 3px 0;font-size:0.78rem">${label}</td>
-      <td style="padding:3px 12px 3px 0;font-size:0.78rem">${with2}</td>
+      <td style="${td}">${label}</td>
+      <td style="${td}">${with2}</td>
       <td style="padding:3px 8px;font-size:0.75rem;color:var(--muted)">${t('corr_insuf')}</td>
       <td style="padding:3px 0;font-size:0.72rem;color:var(--muted)">n=${pairs.length}</td></tr>`;
-    const stars = starsHtml(Math.abs(r));
-    return `<tr>
-      <td style="padding:3px 12px 3px 0;font-size:0.78rem">${label}</td>
-      <td style="padding:3px 12px 3px 0;font-size:0.78rem">${with2}</td>
-      <td style="padding:3px 8px;font-size:0.78rem;font-weight:700;white-space:nowrap">${stars} <span style="color:var(--muted)">r=${r.toFixed(2)}</span></td>
+    const detail = bucketChart(c, true);
+    const open = detail
+      ? ` class="corr-row" onclick="toggleCorrDetail(${idx})" title="${t('corr_open')}"`
+      : '';
+    const caret = detail ? `<span class="corr-caret" id="corr-caret-${idx}">▸</span> ` : '';
+    return `<tr${open}>
+      <td style="${td}">${caret}${label}</td>
+      <td style="${td}">${with2}</td>
+      <td style="padding:3px 8px;font-size:0.78rem;font-weight:700;white-space:nowrap">${starsHtml(Math.abs(r))} <span style="color:var(--muted)">r=${r.toFixed(2)}</span></td>
       <td style="padding:3px 0;font-size:0.72rem;color:var(--muted)">n=${pairs.length}</td>
-    </tr>`;
+    </tr>` + (detail ? `<tr id="corr-detail-${idx}" style="display:none">
+      <td colspan="4" style="padding:2px 0 12px">${detail}</td></tr>` : '');
   }
 
   // Metadata per correlation — includes bucket definitions for the detail chart
@@ -253,7 +265,7 @@ function buildCorrelations(opts = {}) {
     </svg>`;
   }
 
-  function bucketChart(c) {
+  function bucketChart(c, noTitle) {
     const rows = c.buckets.map(([lbl, fn, dotColor]) => {
       const vals = c.pairs.filter(p=>fn(p[0])).map(p=>p[1]);
       if (!vals.length) return '';
@@ -276,7 +288,8 @@ function buildCorrelations(opts = {}) {
       }
     }).join('');
     if (!rows) return '';
-    return `<p style="font-size:0.75rem;font-weight:600;margin:14px 0 5px">${starsHtml(c.abs)} ${c.lbl} <span class="arr">→</span> ${c.w2}</p>
+    const title = noTitle ? '' : `<p style="font-size:0.75rem;font-weight:600;margin:14px 0 5px">${starsHtml(c.abs)} ${c.lbl} <span class="arr">→</span> ${c.w2}</p>`;
+    return title + `
       <div style="display:flex;gap:18px;align-items:center;flex-wrap:wrap">
         <table style="border-collapse:collapse;width:290px;max-width:100%;table-layout:fixed">
           <tbody>${rows}</tbody>
@@ -286,17 +299,6 @@ function buildCorrelations(opts = {}) {
   }
 
   // ★★★ (|r| ≥ 0.5) shown by default; ★★☆ (0.3 ≤ |r| < 0.5) folded behind a click
-  const eligible = corrSorted.filter(c => c.pairs.length >= 4);
-  const strongCharts = eligible.filter(c => c.abs >= 0.5).map(bucketChart).join('');
-  const mediumCharts = eligible.filter(c => c.abs >= 0.3 && c.abs < 0.5).map(bucketChart).join('');
-  const detailCharts = strongCharts + (mediumCharts ? `
-    <details style="margin-top:14px" class="corr-more">
-      <summary style="cursor:pointer;font-size:0.74rem;font-weight:600;color:var(--muted)">
-        ${t('corr_more')}
-      </summary>
-      ${mediumCharts}
-    </details>` : '');
-
   const statsCard = (p_dur1.length + p_onset.length) < 4 ? '' : sectionTitle(t('sec_analysis')) + `
     <div class="chart-card" style="margin-bottom:12px">
       <table style="border-collapse:collapse;width:100%;margin-bottom:14px">
@@ -307,13 +309,23 @@ function buildCorrelations(opts = {}) {
           <th style="padding:2px 0 8px;font-size:0.72rem;color:var(--muted);font-weight:500;text-align:left">${t('corr_n')}</th>
         </tr></thead>
         <tbody>
-          ${corrSorted.map(({lbl,w2,pairs})=>rRow(lbl,w2,pairs)).join('')}
+          ${corrSorted.map((c,i)=>rRow(c,i)).join('')}
         </tbody>
       </table>
-      ${detailCharts}
     </div>`;
 
   return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard };
+}
+
+// Expands one correlation's detail under its row. Global: the table is built as an
+// HTML string and its rows carry inline onclick handlers.
+function toggleCorrDetail(idx) {
+  const row = document.getElementById('corr-detail-' + idx);
+  if (!row) return;
+  const open = row.style.display === 'none';
+  row.style.display = open ? '' : 'none';
+  const caret = document.getElementById('corr-caret-' + idx);
+  if (caret) caret.textContent = open ? '▾' : '▸';
 }
 
 // Writes the analysis table into the Statistics tab.

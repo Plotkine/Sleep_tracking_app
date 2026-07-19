@@ -460,6 +460,13 @@ body { padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
    dernier de chaque ligne finit donc au même bord que la ligne des moyennes. */
 .stats-flow > .chart-card { margin-bottom: 0; flex: 1 1 calc(50% - 9px); min-width: 0; max-width: 100%; }
 .chart-card h3 { font-size: 0.88rem; font-weight: 700; color: var(--primary); margin-bottom: 14px; }
+/* Les points ont un espacement minimum : au-delà d'une certaine densité le graphe
+   déborde de l'écran et défile horizontalement, plutôt que de tasser les points
+   jusqu'à les rendre illisibles. La hauteur est fixée ici, car maintainAspectRatio
+   est désactivé — sinon un graphe large deviendrait aussi haut. */
+.chart-scroll { overflow-x: auto; overflow-y: hidden; }
+.chart-inner { height: 260px; min-width: 100%; }
+.chart-inner > canvas { height: 100% !important; }
 /* Rappel de l'objectif tracé en pointillé sur le graphe, juste sous son titre. */
 .chart-card h3 + .chart-goal { margin: -10px 0 12px; }
 .chart-goal { font-size: 0.74rem; color: var(--muted); display: flex; align-items: center; gap: 6px; }
@@ -660,10 +667,43 @@ nav a { white-space: nowrap; }
   /* 16px = seuil sous lequel le navigateur mobile zoome tout seul au focus. */
   .field input, .field textarea, .field select,
   .time-item input, .sleep-field input, .habit-add-input { font-size: 16px; }
+  /* Le sélecteur de durée est un <button>, celui d'heure un <input> : sans cette
+     ligne le premier restait plus petit que le second sur téléphone. */
+  button.tp-display, .dqp-display { font-size: 16px; }
 }
 
-/* Analyses repliées : le contenu d'un <details> doit partir exactement du même bord
-   que les analyses affichées d'office au-dessus, sans retrait ni marge propre. */
-.corr-more { margin-left: 0; padding-left: 0; }
-.corr-more > summary { margin-bottom: 0; }
-.corr-more > p:first-of-type { margin-top: 14px; }
+/* Ligne de corrélation dépliable */
+.corr-row { cursor: pointer; }
+.corr-row:hover td { background: var(--bg); }
+.corr-caret { color: var(--muted); font-size: 0.7rem; display: inline-block; width: 10px; }
+
+/* Invitation à passer en paysage. Masquée par défaut : elle ne s'affiche qu'en
+   portrait étroit, là où le contenu large déborde réellement. Le téléphone pivote
+   d'un quart de tour puis revient, pour montrer le geste attendu. */
+.rotate-hint {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.74rem;
+  color: var(--muted);
+  margin: 0 0 10px;
+}
+.rotate-hint svg {
+  width: 20px; height: 20px; flex-shrink: 0;
+  stroke: currentColor; fill: none; stroke-width: 1.8;
+  stroke-linecap: round; stroke-linejoin: round;
+  transform-origin: 50% 50%;
+  animation: rotate-nudge 2.4s ease-in-out infinite;
+}
+@keyframes rotate-nudge {
+  0%, 45%   { transform: rotate(0deg); }
+  60%, 85%  { transform: rotate(-90deg); }
+  100%      { transform: rotate(0deg); }
+}
+@media (max-width: 760px) and (orientation: portrait) {
+  .rotate-hint { display: flex; }
+}
+/* Un utilisateur qui a demandé moins d'animations ne doit pas la subir. */
+@media (prefers-reduced-motion: reduce) {
+  .rotate-hint svg { animation: none; }
+}

@@ -248,6 +248,7 @@
     <button class="range-btn"        id="range-btn-30" onclick="setRange(30, event)">30 jours</button>
     <button class="range-btn"        id="range-btn-0"  onclick="setRange(0, event)">Tout</button>
   </div>
+  <div id="stats-rotate"></div>
   <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
     <div class="stat-card"><div class="sv" id="s-avg">–</div><div class="sl" id="lbl-stat-avg">Durée de sommeil moy.</div></div>
     <div class="stat-card"><div class="sv" id="s-bed">–</div><div class="sl" id="lbl-stat-bed">Heure de coucher moy.</div></div>
@@ -267,13 +268,13 @@
     <div class="chart-card">
       <h3 id="lbl-chart-dur">Durée de sommeil par nuit</h3>
       <div id="dur-goal" class="chart-goal"></div>
-      <div id="c-dur-wrap"><canvas id="c-dur"></canvas></div>
+      <div id="c-dur-wrap" class="chart-scroll"><div class="chart-inner"><canvas id="c-dur"></canvas></div></div>
       <div id="dur-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem"></div>
     </div>
     <div class="chart-card">
       <h3 id="lbl-chart-sleep">Heure d'endormissement</h3>
       <div id="sleep-goal" class="chart-goal"></div>
-      <div id="c-sleep-wrap"><canvas id="c-sleep"></canvas></div>
+      <div id="c-sleep-wrap" class="chart-scroll"><div class="chart-inner"><canvas id="c-sleep"></canvas></div></div>
       <div id="sleep-legend" style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem"></div>
     </div>
   </div>
