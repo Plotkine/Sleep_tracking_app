@@ -23,13 +23,28 @@ Opens `http://localhost:8742`. The `data/` folder is created on first launch.
 
 ## Android app
 
-A debug APK is available under [releases](https://github.com/Plotkine/Sleep_tracking_app/releases). To rebuild it (JDK 17 and Android SDK 34 required):
+### Installing it — just download the APK
+
+While the app is in development it is not on the Play Store, so there is nothing to build and no toolchain to set up. **Download the APK and open it on your phone:**
+
+1. Go to [releases](https://github.com/Plotkine/Sleep_tracking_app/releases) and download `agenda-sommeil-v1.0-debug.apk`, straight from the phone's browser or transferred from a computer.
+2. Tap the downloaded file.
+3. Android blocks the first attempt — *"your phone is not allowed to install unknown apps from this source"*. Tap **Settings** in that dialog and allow installation for whichever app you used (Files, Chrome, Gmail…), then tap the APK again.
+4. Play Protect may also warn you, since the app is not signed by a Play Store key: **More details → Install anyway**.
+
+It then shows up in your launcher as **Agenda du Sommeil**. It works fully offline and starts with an empty diary.
+
+This is a **debug build**: installable and it never expires, but it cannot be published to the Play Store. If a signed release build ever replaces it you will have to uninstall this one first — Android refuses to update an app whose signing certificate changed — and uninstalling wipes its data, so export it beforehand.
+
+### Rebuilding it yourself
+
+Only needed if you change the code. Requires JDK 17 and Android SDK 34:
 
 ```bash
 cd android-app
 npm install
 npm run sync        # copies frontend/ into www/
-npm run build:apk
+npm run build:apk   # -> android-app/dist/agenda-sommeil-debug.apk
 ```
 
 ## Your data
