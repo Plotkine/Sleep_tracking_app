@@ -1,7 +1,8 @@
 # Personal data: nights, habits, notes. Never versioned.
 data/
 
-# Local working notes
+# Local working notes — the root CLAUDE.md and any directory-scoped one (e.g.
+# android-app/CLAUDE.md). A bare pattern matches this filename at every depth.
 CLAUDE.md
 .claude/
 
