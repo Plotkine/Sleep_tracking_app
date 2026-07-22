@@ -16,7 +16,10 @@ function buildCorrelations(opts = {}) {
     .filter(e => e.dateStr !== opts.excludeDate)
     .sort((a,b) => a.dateStr.localeCompare(b.dateStr));
   function pearson(xs, ys) {
-    const n = xs.length; if (n < 4) return null;
+    // n < 10 : trop peu de nuits pour une corrélation fiable — on ne l'affiche pas
+    // (le tableau la marque « données insuffisantes ») et le résumé n'en tient pas
+    // compte.
+    const n = xs.length; if (n < 10) return null;
     const mx = xs.reduce((a,b)=>a+b,0)/n, my = ys.reduce((a,b)=>a+b,0)/n;
     const num = xs.reduce((s,x,i)=>s+(x-mx)*(ys[i]-my),0);
     const den = Math.sqrt(xs.reduce((s,x)=>s+(x-mx)**2,0)*ys.reduce((s,y)=>s+(y-my)**2,0));
@@ -314,7 +317,16 @@ function buildCorrelations(opts = {}) {
       </table>
     </div>`;
 
-  return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard };
+  // Dashboard version: only the ★★★ correlations (|r| ≥ 0.5), each shown expanded
+  // (title with its stars + bucket table + mini scatter). No fold-out table, so its
+  // markup carries no toggle ids and cannot collide with the Statistics table above.
+  const three = corrSorted.filter(c => c.abs >= 0.5);
+  const html3 = three.length
+    ? sectionTitle(t('sec_analysis'))
+      + three.map(c => `<div class="chart-card" style="margin-bottom:12px">${bucketChart(c)}</div>`).join('')
+    : '';
+
+  return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard, html3 };
 }
 
 // Expands one correlation's detail under its row. Global: the table is built as an
@@ -338,82 +350,18 @@ function renderSummary() {
   const el = document.getElementById('summary-view');
   if (!el) return;
 
-  const sorted = [...entries].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
+  // `yest` carries today's form (entry dated D → form of D+1), used by the prediction.
+  // `today` is the anchor of the rolling windows: their most recent slot is the entry
+  // dated today — the night of this evening — which counts once recorded and otherwise
+  // leaves the average to the days that do have data.
   const yest = yesterday();
-  let startDate, endDate;
-  if (summaryRange === 0) {
-    startDate = sorted.length ? sorted[0].dateStr : yest;
-    const last = sorted.length ? sorted[sorted.length-1].dateStr : yest;
-    endDate = last < yest ? last : yest;
-  } else {
-    const e = new Date(yest+'T12:00:00');
-    const s = new Date(e); s.setDate(s.getDate() - (summaryRange - 1));
-    startDate = s.toISOString().split('T')[0];
-    endDate   = yest;
-  }
-
-  const allDates = [];
-  { const c = new Date(startDate+'T12:00:00'), end = new Date(endDate+'T12:00:00');
-    while (c <= end) { allDates.push(c.toISOString().split('T')[0]); c.setDate(c.getDate()+1); } }
-
-  const entryMap = {};
-  sorted.forEach(e => entryMap[e.dateStr] = e);
-  const days = allDates.map(d => entryMap[d] || null);
-
-  const tH = sleepTargetH();
-  // durColor / onsetColor / ratioColor : barème unique de colors.js.
-
-  const activeHabits = habits.filter(h => h.tracked !== false);
-
-  // One row per day that has an entry
-  const entryDays = days.filter(Boolean).reverse(); // most-recent last → show ascending
-  let rows = '';
-  if (!entryDays.length) {
-    rows = `<p style="font-size:0.82rem;color:var(--muted);padding:8px 0">${t('none_period')}</p>`;
-  } else {
-    entryDays.forEach(e => {
-      const dur   = sleepDuration(e);
-      const onset = sleepOnsetH(e);
-      const dc    = durColor(dur);
-      const habitDots = activeHabits.map(h => {
-        const done = (e.habits && e.habits.includes(h.id)) ? true : (e.habitsNotDone && e.habitsNotDone.includes(h.id)) ? false : null;
-        const bg   = done === true ? '#27ae60' : done === false ? 'var(--border)' : 'transparent';
-        const border = done === null ? '1px solid var(--border)' : 'none';
-        return `<span title="${h.name}" style="display:inline-block;width:9px;height:9px;border-radius:2px;background:${bg};border:${border};flex-shrink:0"></span>`;
-      }).join('');
-
-      const dateLabel = new Date(e.dateStr+'T12:00:00').toLocaleDateString(t('locale'),{weekday:'short',day:'2-digit',month:'2-digit'});
-      rows += `
-        <div style="display:flex;align-items:center;gap:8px;padding:4px 0">
-          <div style="width:78px;font-size:0.74rem;font-weight:600;flex-shrink:0;white-space:nowrap">${dateLabel}</div>
-          <div id="sum-tl-${e.id}" style="flex:1;position:relative;height:26px;overflow:hidden"></div>
-          <div style="width:32px;text-align:right;font-size:0.76rem;font-weight:700;flex-shrink:0;color:${dc}">${dur!==null?fmtH(dur):'–'}</div>
-          <div style="width:38px;text-align:right;font-size:0.72rem;flex-shrink:0;color:${onset!==null?onsetColor(onset):'var(--muted)'}">${onset!==null?fmtDecH(onset):'–'}</div>
-          <div style="width:12px;flex-shrink:0">${e.dayForm?`<span title="${VNAME[e.dayForm]}" style="display:inline-block;width:10px;height:10px;border-radius:2px;background:${RCOLOR[e.dayForm]}"></span>`:''}</div>
-          ${activeHabits.length?`<div style="display:flex;gap:3px;flex-shrink:0">${habitDots}</div>`:''}
-        </div>`;
-    });
-  }
-
-  // Legend
-  const legend = `<div style="display:flex;flex-wrap:wrap;gap:10px;font-size:0.71rem;color:var(--muted);margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);align-items:center">
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#3d5a80,#3d5a80 2px,#5b8dbf 2px,#5b8dbf 4px);border-radius:2px"></span>${t('tl_sleep')}</span>
-    <span style="display:flex;align-items:center;gap:4px"><span style="width:18px;height:8px;display:inline-block;background:repeating-linear-gradient(45deg,#8ecae6,#8ecae6 2px,#b8daed 2px,#b8daed 4px);border-radius:2px"></span>${t('tl_half')}</span>
-    <span>${t('tl_markers')}</span>
-    <span style="opacity:0.3">|</span>
-    ${bandsLegendHtml(durBands(), 'square')}
-    <span style="opacity:0.3">|</span>
-    ${VALS.map(v=>`<span style="color:${RCOLOR[v]}">${VNAME[v]}</span>`).join('')}
-    ${activeHabits.length ? `<span style="opacity:0.3">|</span>${activeHabits.map(h=>`<span style="display:flex;align-items:center;gap:3px"><span style="width:9px;height:9px;display:inline-block;border-radius:2px;background:#27ae60"></span>${h.name}</span>`).join('')}` : ''}
-  </div>`;
+  const today = localDate();
 
   // ---- Mascot & statistics (computed over ALL entries) ----
   const allSorted = [...entries].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
-  const lastWithForm = [...allSorted].reverse().find(e => e.dayForm);
-  const lastForm = lastWithForm?.dayForm ?? null;
   const lastSleep = allSorted[allSorted.length - 1] ?? null;
 
-  const { pearson, byDate, p_dur1, p_onset, corrSorted } = buildCorrelations();
+  const { pearson, byDate, p_dur1, p_onset, corrSorted, html3 } = buildCorrelations();
 
   // Helper: z-score of value v relative to array arr
   function zOf(arr, v) {
@@ -422,8 +370,9 @@ function renderSummary() {
     const s = Math.sqrt(arr.reduce((s,x)=>s+(x-m)**2,0)/arr.length) || 1;
     return (v - m) / s;
   }
-  // "Medium correlation" threshold — the same one the analysis table uses (★★☆).
-  const MIN_R = 0.3, MIN_N = 4, MAX_PRED = 3;
+  // "Medium correlation" threshold — the same one the analysis table uses (★★☆). A
+  // predictor needs at least MIN_N nights (the reliability floor), matching pearson().
+  const MIN_R = 0.3, MIN_N = 10, MAX_PRED = 3;
 
   // Mascot prediction. Two requirements:
   //  · it must not depend on the form recorded for the day being predicted, hence the
@@ -435,6 +384,9 @@ function renderSummary() {
   // dated every predictor relative to it — "night before last" then pointed at a night
   // four days old whenever the recent ones were missing.
   const predEntry = byDate[yest] ?? null;
+  // Today's form = the form recorded on the entry dated yesterday. Shown at the top of
+  // the card only when it exists; otherwise the card carries the prediction alone.
+  const todayForm = predEntry?.dayForm ?? null;
 
   let predComment = '';
   if (!lastSleep) {
@@ -505,9 +457,9 @@ function renderSummary() {
     }
   }
 
-  // 3 stat cards — last 3 days
-  const s3d = new Date(yest+'T12:00:00'); s3d.setDate(s3d.getDate() - 2);
-  const ranged3 = allSorted.filter(e => e.dateStr >= s3d.toISOString().split('T')[0] && e.dateStr <= yest);
+  // 3 stat cards — last 3 nights, ending at the entry dated today (see `today` above)
+  const s3d = new Date(today+'T12:00:00'); s3d.setDate(s3d.getDate() - 2);
+  const ranged3 = allSorted.filter(e => e.dateStr >= s3d.toISOString().split('T')[0] && e.dateStr <= today);
 
   const durs3 = ranged3.map(e=>sleepDuration(e)).filter(d=>d!==null);
   const avgDur3 = durs3.length ? durs3.reduce((a,b)=>a+b,0)/durs3.length : null;
@@ -556,14 +508,16 @@ function renderSummary() {
       ${trackedNames.map(n => `<li style="margin-top:1px">${n}</li>`).join('')}
     </ul>` : '';
 
+  // Today's form is shown at the top only when it has been recorded; otherwise the card
+  // shows the mascot in a neutral pose and the prediction alone.
   const mascotCard = `
     <div class="chart-card" style="display:flex;gap:16px;align-items:center;margin-bottom:12px">
-      <div style="width:90px;flex-shrink:0">${meerkitSVG(lastForm)}</div>
+      <div style="width:90px;flex-shrink:0">${meerkitSVG(todayForm)}</div>
       <div style="flex:1;min-width:0">
-        ${lastForm
-          ? `<div style="font-size:1.3rem;font-weight:700;color:${RCOLOR[lastForm]}">${VNAME[lastForm]}</div>
-             <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">${t('last_form')}</div>`
-          : `<div style="font-size:1rem;color:var(--muted)">${t('no_form')}</div>`}
+        ${todayForm
+          ? `<div style="font-size:1.3rem;font-weight:700;color:${RCOLOR[todayForm]}">${VNAME[todayForm]}</div>
+             <div style="font-size:0.72rem;color:var(--muted);margin-bottom:6px">${t('d_today')}</div>`
+          : ''}
         <p style="font-size:0.8rem;color:var(--text);margin:0">${predComment}</p>
         ${habitsReminder}
         <p style="font-size:0.78rem;color:var(--primary-light);margin:6px 0 0">${encouragement}</p>
@@ -578,10 +532,34 @@ function renderSummary() {
     <div class="stat-card"><div class="sv">${avgHabHtml}</div><div class="sl">${t('c_hab_avg')}</div></div>
   </div>`;
 
+  // The two dot charts (duration + onset) over the same 3 nights as the cards and the
+  // preview — [today-2, today-1, today], ascending — built with the shared builders
+  // from stats.js. Placed above the 3-line preview.
+  const chartDates = [];
+  { const d = new Date(today+'T12:00:00');
+    for (let i = 2; i >= 0; i--) { const dd = new Date(d); dd.setDate(dd.getDate() - i); chartDates.push(dd.toISOString().split('T')[0]); } }
+  const days3 = chartDates.map(ds => byDate[ds] ?? null);
+  const xlabels3 = chartDates.map(ds => new Date(ds+'T12:00:00').toLocaleDateString(t('locale'), {day:'2-digit', month:'2-digit'}));
+  const chartsCard = `
+    <div class="stats-flow" style="margin-bottom:12px">
+      <div class="chart-card">
+        <h3>${t('chart_dur')}</h3>
+        <div class="chart-goal"><span class="goal-dash"></span>${t('goal_label')} ${fmtH(durTargetH())}</div>
+        <div class="chart-pane"><div class="chart-inner" style="height:180px"><canvas id="c-dur-sum"></canvas></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem">${bandsLegendHtml(durBands())}</div>
+      </div>
+      <div class="chart-card">
+        <h3>${t('chart_sleep')}</h3>
+        <div class="chart-goal"><span class="goal-dash"></span>${t('goal_label')} ${fmtClock(sleepTarget)}</div>
+        <div class="chart-pane"><div class="chart-inner" style="height:180px"><canvas id="c-sleep-sum"></canvas></div></div>
+        <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem">${bandsLegendHtml(onsetBands())}</div>
+      </div>
+    </div>`;
+
   // Preview of the last 3 days — same rendering as the Entry preview, gathered in one card
   // Newest first
   const prevDays = [];
-  { const d = new Date(yest+'T12:00:00');
+  { const d = new Date(today+'T12:00:00');
     for (let i = 0; i < 3; i++) {
       const ds = d.toISOString().split('T')[0];
       prevDays.push({ ds, e: byDate[ds] ?? null });
@@ -606,8 +584,14 @@ function renderSummary() {
       <div id="sum-prev-legend"></div>
     </div>`;
 
-  // "Your data analysed" moved to the Statistics tab (renderCorrelations).
-  el.innerHTML = sectionTitle(t('sec_now')) + mascotCard + miniCards + previewCard;
+  // The full "Your data analysed" table lives in Statistics; the dashboard shows only
+  // its ★★★ correlations (html3), at the very bottom.
+  el.innerHTML = sectionTitle(t('sec_now')) + mascotCard + miniCards + chartsCard + previewCard + html3;
+
+  if (charts.durSum) charts.durSum.destroy();
+  charts.durSum = durDotChart('c-dur-sum', days3, xlabels3);
+  if (charts.sleepSum) charts.sleepSum.destroy();
+  charts.sleepSum = onsetDotChart('c-sleep-sum', days3, xlabels3);
 
   prevDays.forEach(({e}, i) => { if (e) renderTL(e, `sum-prev-${i}`, { showTimes: true, hideHours: true }); });
   // renderTL re-emits the ruler and legend on every call, inside the row it renders

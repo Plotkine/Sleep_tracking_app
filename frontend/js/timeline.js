@@ -1,5 +1,10 @@
 // 24 h timeline rendering (20:00 → 20:00).
 // renderTL = detailed version (Entry, dashboard) · renderTLCompact = dense version (History).
+
+// Bed (↓) / wake (↑) markers: a warm amber, distinct from the blue blocks and the
+// orange somnolence "S", with a dark halo for legibility on any background.
+const MARKER_COLOR  = '#f5a623';
+const MARKER_SHADOW = '0 0 2px rgba(0,0,0,0.6)';
 function fracDur(d) {
   if (d < 0) d += 1;
   return fmtH(d * 24);   // same rule as everywhere else: "7h30", "30min"
@@ -96,9 +101,12 @@ function renderTL(e, containerId, opts = {}) {
     if (s !== null && en !== null) drawBlock(s, en, sl.halfSleep, startT, endT);
     // In times mode the ↓ ↑ markers move into the bar (as renderTLCompact already did):
     // the top band then carries only the times, and can sit close to the bar.
+    // Bed / wake markers: a distinct amber, bold, with a dark halo so they stand out
+    // against the sleep blocks, the light-blue half-sleep and the empty bar alike —
+    // the plain glyphs were too faint to read as the going-to-bed / getting-up marks.
     const marker = (f, glyph, tip) => showTimes
-      ? `<div style="position:absolute;left:${pct(f)};bottom:1px;transform:translateX(-50%);font-size:11px;line-height:1;z-index:3;pointer-events:none" title="${tip}">${glyph}</div>`
-      : `<div style="position:absolute;left:${pct(f)};bottom:0;transform:translateX(-50%);font-size:13px;line-height:1" title="${tip}">${glyph}</div>`;
+      ? `<div style="position:absolute;left:${pct(f)};bottom:1px;transform:translateX(-50%);font-size:13px;font-weight:bold;line-height:1;color:${MARKER_COLOR};text-shadow:${MARKER_SHADOW};z-index:3;pointer-events:none" title="${tip}">${glyph}</div>`
+      : `<div style="position:absolute;left:${pct(f)};bottom:0;transform:translateX(-50%);font-size:15px;font-weight:bold;line-height:1;color:${MARKER_COLOR};text-shadow:${MARKER_SHADOW}" title="${tip}">${glyph}</div>`;
     if (bed !== null) { const m = marker(bed, '↓', sl.bed||sl.bedtime||''); if (showTimes) bars += m; else arrows += m; }
     if (wk  !== null) { const m = marker(wk,  '↑', sl.wakeup||'');          if (showTimes) bars += m; else arrows += m; }
   }
@@ -179,8 +187,8 @@ function renderTLCompact(e, containerId, opts = {}) {
     const s = sleepS !== null ? sleepS : bed;
     const en = sleepE !== null ? sleepE : wk;
     if (s !== null && en !== null) drawBlock(s, en, sl.halfSleep, sl.sleepStart||sl.bed||'', sl.sleepEnd||sl.wakeup||'');
-    if (bed !== null) bars += `<div style="position:absolute;left:${pct(bed)};bottom:1px;transform:translateX(-50%);font-size:11px;line-height:1;z-index:3;pointer-events:none" title="${sl.bed||sl.bedtime||''}">↓</div>`;
-    if (wk  !== null) bars += `<div style="position:absolute;left:${pct(wk)};bottom:1px;transform:translateX(-50%);font-size:11px;line-height:1;z-index:3;pointer-events:none" title="${sl.wakeup||''}">↑</div>`;
+    if (bed !== null) bars += `<div style="position:absolute;left:${pct(bed)};bottom:1px;transform:translateX(-50%);font-size:13px;font-weight:bold;line-height:1;color:${MARKER_COLOR};text-shadow:${MARKER_SHADOW};z-index:3;pointer-events:none" title="${sl.bed||sl.bedtime||''}">↓</div>`;
+    if (wk  !== null) bars += `<div style="position:absolute;left:${pct(wk)};bottom:1px;transform:translateX(-50%);font-size:13px;font-weight:bold;line-height:1;color:${MARKER_COLOR};text-shadow:${MARKER_SHADOW};z-index:3;pointer-events:none" title="${sl.wakeup||''}">↑</div>`;
   }
   (e.naps||[]).filter(n=>n.s&&n.e).forEach(n=>{
     const s=timeFrac(n.s), en=timeFrac(n.e);

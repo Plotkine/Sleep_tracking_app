@@ -20,21 +20,163 @@ function updateChartNav(wrapId) {
   if (right) right.style.display = w.scrollLeft < max - 4 ? 'block' : 'none';
 }
 
+// ---- Shared Chart.js helpers (Statistics AND the Dashboard use the same charts) ----
+// Inline plugin: dashed target line + its label, on the y axis.
+function refLine(value, label) {
+  return { id:'refLine', afterDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    const yPx = y.getPixelForValue(value);
+    ctx.save();
+    ctx.strokeStyle = '#4a7aa8';
+    ctx.lineWidth = 1.5;
+    ctx.setLineDash([5, 4]);
+    ctx.beginPath();
+    ctx.moveTo(chart.chartArea.left, yPx);
+    ctx.lineTo(chart.chartArea.right, yPx);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#4a7aa8';
+    ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.textBaseline = 'bottom';
+    ctx.fillText(label, chart.chartArea.right, yPx - 3);
+    ctx.restore();
+  }};
+}
+
+// Inline plugin: a vertical stroke under each point, from the 0h baseline up to the
+// dot, in the dot's own colour. Reserved for the duration chart, whose axis is anchored
+// at 0h, so the stroke's length reads as the value. Replaces the joined line: an
+// unrecorded day is simply a gap, with no segment to special-case.
+function stemLines(colorFn) {
+  return { id:'stemLines', beforeDatasetsDraw(chart) {
+    const { ctx, scales: { y } } = chart;
+    const y0 = y.getPixelForValue(0);
+    chart.data.datasets.forEach((ds, i) => {
+      chart.getDatasetMeta(i).data.forEach((pt, j) => {
+        const v = ds.data[j];
+        if (v == null) return;
+        ctx.save();
+        ctx.strokeStyle = colorFn(v);
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        ctx.moveTo(pt.x, y0);
+        ctx.lineTo(pt.x, pt.y);
+        ctx.stroke();
+        ctx.restore();
+      });
+    });
+  }};
+}
+
+// Inline plugin: value labels above each dot, in the dot's own colour, so a value and
+// its band read as one.
+function dotLabels(colorFn, formatFn) {
+  return { id:'dotLabels', afterDatasetsDraw(chart) {
+    const { ctx } = chart;
+    ctx.save();
+    ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+    chart.data.datasets.forEach((ds, i) => {
+      chart.getDatasetMeta(i).data.forEach((pt, j) => {
+        const v = ds.data[j];
+        if (v == null) return;
+        ctx.fillStyle = colorFn(v);
+        ctx.fillText(formatFn(v), pt.x, pt.y - 6);
+      });
+    });
+    ctx.restore();
+  }};
+}
+
+// Duration per night: coloured dots, a vertical stem to the 0h baseline, dashed target.
+// `days` is the continuous date range (nulls for unrecorded nights); `xlabels` matches.
+function durDotChart(canvasId, days, xlabels) {
+  const tD = durTargetH();
+  const durData = days.map(e => { if(!e) return null; const d=sleepDuration(e); return d!==null?Math.round(d*100)/100:null; });
+  // Axis always anchored at 0h (an explicit user preference): the stems start from the
+  // x axis, so their length only reads correctly on a zero baseline.
+  const durVals = durData.filter(v => v != null);
+  const durHi = Math.ceil(Math.max(tD, ...durVals)) + 1;
+  return new Chart(document.getElementById(canvasId).getContext('2d'), {
+    type: 'line',
+    data: { labels: xlabels, datasets: [{
+      label: t('chart_dur'), data: durData, borderWidth: 0,
+      pointRadius: durData.map(v => v != null ? 4 : 0),
+      pointBackgroundColor: durData.map(v => durColor(v, 'transparent')),
+      showLine: false,
+    }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { displayColors: false, callbacks: { label: ctx => {
+          const parts = [ctx.parsed.y != null ? ` ${fmtH(ctx.parsed.y)}` : ' –'];
+          const day = days[ctx.dataIndex];
+          if (day?.notes) parts.push(` 📝 ${day.notes}`);
+          return parts;
+        }}}
+      },
+      layout: { padding: { left: 0, right: 0, top: 12 } },
+      scales: {
+        x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
+        y: { min: 0, max: durHi, ticks: { stepSize: 1, callback: v => fmtHourTick(v) } }
+      }
+    },
+    plugins: [ stemLines(durColor), refLine(tD, fmtH(tD)), dotLabels(durColor, fmtH) ]
+  });
+}
+
+// Sleep onset: coloured dots, dashed target. No stems and no zero baseline — a clock
+// time has no meaningful zero, so the range stays 20:00→06:00 and reversed.
+function onsetDotChart(canvasId, days, xlabels) {
+  const tH = sleepTargetH();
+  const onsetData = days.map(sleepOnsetH);
+  return new Chart(document.getElementById(canvasId).getContext('2d'), {
+    type: 'line',
+    data: { labels: xlabels, datasets: [{
+      label: t('chart_sleep'), data: onsetData, borderWidth: 0,
+      pointRadius: onsetData.map(v => v != null ? 4 : 0),
+      pointBackgroundColor: onsetData.map(v => onsetColor(v, 'transparent')),
+      showLine: false,
+    }] },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: { displayColors: false, callbacks: { label: ctx =>
+          ctx.parsed.y == null ? ' –' : ` ${fmtDecH(ctx.parsed.y)}` } }
+      },
+      layout: { padding: { left: 0, right: 0 } },
+      scales: {
+        x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
+        y: {
+          min: 20, max: 30, reverse: true,
+          ticks: { stepSize: 1, callback: v => { const h = v >= 24 ? v - 24 : v; return `${String(h).padStart(2,'0')}${clockSep()}00`; } },
+        }
+      }
+    },
+    plugins: [ refLine(tH, fmtClock(sleepTarget)), dotLabels(onsetColor, fmtDecH) ]
+  });
+}
+
 function renderStats() {
   const sorted = [...entries].sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
 
-  // Build continuous date range
-  const yest = yesterday();
+  // Build continuous date range. The window ends at TODAY (the entry dated today — the
+  // night just gone / of this evening): once that night is recorded it counts, and
+  // while it is still empty the average simply falls back to the days that do have data.
+  const anchor = localDate();
   let startDate, endDate;
   if (statsRange === 0) {
-    startDate = sorted.length ? sorted[0].dateStr : yest;
-    const last = sorted.length ? sorted[sorted.length-1].dateStr : yest;
-    endDate   = last < yest ? last : yest;
+    startDate = sorted.length ? sorted[0].dateStr : anchor;
+    const last = sorted.length ? sorted[sorted.length-1].dateStr : anchor;
+    endDate   = last < anchor ? last : anchor;
   } else {
-    const e = new Date(yest+'T12:00:00');
+    const e = new Date(anchor+'T12:00:00');
     const s = new Date(e); s.setDate(s.getDate() - (statsRange - 1));
     startDate = s.toISOString().split('T')[0];
-    endDate   = yest;
+    endDate   = anchor;
   }
 
   const allDates = [];
@@ -55,9 +197,6 @@ function renderStats() {
       const card = document.getElementById(id)?.closest('.chart-card');
       if (card) card.style.flex = side ? '1 1 calc(50% - 9px)' : '1 1 100%';
     }); }
-
-  // Helpers partagés (sleepOnsetH / durColor / onsetColor / fmtDecH) : définis globalement
-  const tH = sleepTargetH();
 
   // 30 jours ou « Tout » : les frises et les graphes dépassent largement un écran
   // de téléphone en portrait.
@@ -117,83 +256,6 @@ function renderStats() {
     document.getElementById('s-habits').innerHTML = avg!==null
       ? `<span style="color:${ratioColor(avg)}">${Math.round(avg*100)}%</span>` : '–'; }
 
-  // Inline plugin: dashed target line + its label, on the y axis
-  function refLine(value, label) {
-    return { id:'refLine', afterDraw(chart) {
-      const { ctx, scales: { y } } = chart;
-      const yPx = y.getPixelForValue(value);
-      ctx.save();
-      ctx.strokeStyle = '#4a7aa8';
-      ctx.lineWidth = 1.5;
-      ctx.setLineDash([5, 4]);
-      ctx.beginPath();
-      ctx.moveTo(chart.chartArea.left, yPx);
-      ctx.lineTo(chart.chartArea.right, yPx);
-      ctx.stroke();
-      ctx.setLineDash([]);
-      ctx.fillStyle = '#4a7aa8';
-      ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'bottom';
-      ctx.fillText(label, chart.chartArea.right, yPx - 3);
-      ctx.restore();
-    }};
-  }
-
-  // Inline plugin: joins the dots. Each segment gets its own gradient, from the left
-  // dot's colour to the right one's, so the hue follows the move from one band to the
-  // next. Reserved for the duration chart.
-  function gradientLine(colorFn) {
-    return { id:'gradientLine', beforeDatasetsDraw(chart) {
-      const { ctx } = chart;
-      chart.data.datasets.forEach((ds, i) => {
-        const pts = chart.getDatasetMeta(i).data
-          .map((pt, j) => ({ pt, v: ds.data[j], j }))
-          .filter(p => p.v != null);
-        if (pts.length < 2) return;
-        ctx.save();
-        ctx.lineWidth = 2;
-        // Segment par segment, et seulement entre deux jours consécutifs : l'axe
-        // spans a continuous date range, so two points separated by an unrecorded day
-        // must not be joined — the line would invent a continuity the data does not
-        // have.
-        for (let k = 0; k < pts.length - 1; k++) {
-          const a = pts[k], b = pts[k+1];
-          if (b.j - a.j !== 1) continue;
-          const g = ctx.createLinearGradient(a.pt.x, 0, b.pt.x, 0);
-          g.addColorStop(0, colorFn(a.v));
-          g.addColorStop(1, colorFn(b.v));
-          ctx.strokeStyle = g;
-          ctx.beginPath();
-          ctx.moveTo(a.pt.x, a.pt.y);
-          ctx.lineTo(b.pt.x, b.pt.y);
-          ctx.stroke();
-        }
-        ctx.restore();
-      });
-    }};
-  }
-
-  // Inline plugin: value labels above each dot, in the dot's own colour, so a value
-  // and its band read as one.
-  function dotLabels(colorFn, formatFn) {
-    return { id:'dotLabels', afterDatasetsDraw(chart) {
-      const { ctx } = chart;
-      ctx.save();
-      ctx.font = 'bold 9px "Segoe UI",system-ui,sans-serif';
-      ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
-      chart.data.datasets.forEach((ds, i) => {
-        chart.getDatasetMeta(i).data.forEach((pt, j) => {
-          const v = ds.data[j];
-          if (v == null) return;
-          ctx.fillStyle = colorFn(v);
-          ctx.fillText(formatFn(v), pt.x, pt.y - 6);
-        });
-      });
-      ctx.restore();
-    }};
-  }
-
   // Largeur nécessaire pour que deux points restent lisibles. En dessous, le
   // conteneur défile horizontalement au lieu de comprimer l'axe.
   const MIN_PX_PER_POINT = 46;
@@ -215,96 +277,21 @@ function renderStats() {
     });
   }
 
-  const durData = days.map(e => { if(!e) return null; const d=sleepDuration(e); return d!==null?Math.round(d*100)/100:null; });
-
-  // Duration chart — dots, with a configurable target line
+  // Duration chart — dots + stems, with a configurable target line
   if (charts.dur) charts.dur.destroy();
   sizeChartArea('c-dur-wrap');
-  const tD = durTargetH();
   document.getElementById('dur-goal').innerHTML =
-    `<span class="goal-dash"></span>${t('goal_label')} ${fmtH(tD)}`;
+    `<span class="goal-dash"></span>${t('goal_label')} ${fmtH(durTargetH())}`;
   document.getElementById('dur-legend').innerHTML = bandsLegendHtml(durBands());
-  // Axis always anchored at 0h: the vertical strokes start from the x axis, so their
-  // length only reads correctly on a zero baseline.
-  const durVals = durData.filter(v => v != null);
-  const durLo = 0;
-  const durHi = Math.ceil(Math.max(tD, ...durVals)) + 1;
-  charts.dur = new Chart(document.getElementById('c-dur').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: xlabels,
-      datasets: [{
-        label: t('chart_dur'),
-        data: durData,
-        borderWidth: 0,
-        pointRadius: durData.map(v => v != null ? 4 : 0),
-        pointBackgroundColor: durData.map(v => durColor(v, 'transparent')),
-        showLine: false,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { displayColors: false, callbacks: { label: ctx => {
-          const parts = [ctx.parsed.y != null ? ` ${fmtH(ctx.parsed.y)}` : ' –'];
-          const day = days[ctx.dataIndex];
-          if (day?.notes) parts.push(` 📝 ${day.notes}`);
-          return parts;
-        }}}
-      },
-      layout: { padding: { left: 0, right: 0, top: 12 } },
-      scales: {
-        x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
-        y: { min: durLo, max: durHi, ticks: { stepSize: 1, callback: v => fmtHourTick(v) } }
-      }
-    },
-    plugins: [ gradientLine(durColor), refLine(tD, fmtH(tD)), dotLabels(durColor, fmtH) ]
-  });
+  charts.dur = durDotChart('c-dur', days, xlabels);
 
   // Sleep onset chart
   if (charts.sleep) charts.sleep.destroy();
   sizeChartArea('c-sleep-wrap');
-  const onsetData = days.map(sleepOnsetH);
   document.getElementById('sleep-goal').innerHTML =
     `<span class="goal-dash"></span>${t('goal_label')} ${fmtClock(sleepTarget)}`;
   document.getElementById('sleep-legend').innerHTML = bandsLegendHtml(onsetBands());
-  charts.sleep = new Chart(document.getElementById('c-sleep').getContext('2d'), {
-    type: 'line',
-    data: {
-      labels: xlabels,
-      datasets: [{
-        label: t('chart_sleep'),
-        data: onsetData,
-        borderWidth: 0,
-        pointRadius: onsetData.map(v => v != null ? 4 : 0),
-        pointBackgroundColor: onsetData.map(v => onsetColor(v, 'transparent')),
-        showLine: false,
-      }]
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: { displayColors: false, callbacks: { label: ctx => {
-          if (ctx.parsed.y == null) return ' –';
-          return ` ${fmtDecH(ctx.parsed.y)}`;
-        }}}
-      },
-      layout: { padding: { left: 0, right: 0 } },
-      scales: {
-        x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
-        y: {
-          min: 20, max: 30,
-          reverse: true,
-          ticks: { stepSize: 1, callback: v => { const h = v >= 24 ? v - 24 : v; return `${String(h).padStart(2,'0')}${clockSep()}00`; } },
-        }
-      }
-    },
-    plugins: [ refLine(tH, fmtClock(sleepTarget)), dotLabels(onsetColor, fmtDecH) ]
-  });
+  charts.sleep = onsetDotChart('c-sleep', days, xlabels);
 
   // Correlation table, at the bottom of the tab (defined in summary.js).
   renderCorrelations();
