@@ -54,6 +54,12 @@ function ratioColor(v) {
   return v >= 0.75 ? SCALE.good : v >= 0.5 ? SCALE.ok : v >= 0.25 ? SCALE.poor : SCALE.bad;
 }
 
+// Signed day-form improvement: a lift is good (green), a drop bad (red), ~flat muted.
+function deltaColor(v) {
+  if (v == null) return 'var(--muted)';
+  return v > 0.1 ? SCALE.good : v < -0.1 ? SCALE.bad : 'var(--muted)';
+}
+
 // Buckets for a detail analysis, generated from the same bands: the table's
 // thresholds therefore always match the colours shown elsewhere.
 function bucketsFrom(bands) {

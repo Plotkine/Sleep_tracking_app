@@ -1,6 +1,10 @@
 // Dashboard tab: correlations, scatter plot, mascot text.
 let _scatterId = 0;
 
+// Day-form improvement (Δ of RSCORE vs the day before, −4..+4): signed, whole numbers
+// shown without a decimal, averages with one.
+const fmtDelta = v => (v > 0 ? '+' : '') + (Number.isInteger(v) ? v : v.toFixed(1));
+
 // Star score of a correlation, from |r|
 
 const sectionTitle = txt => `<div style="margin-bottom:6px"><span style="font-size:0.72rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:0.05em">${txt}</span></div>`;
@@ -53,9 +57,15 @@ function buildCorrelations(opts = {}) {
   // Veille      = même entrée (nuit J→J+1, forme J+1).
   // Avant-veille = entrée J-1 (nuit J-1→J, forme J+1).
   const p_dur1=[], p_dur2=[], p_onset=[], p_bed_dur=[];
+  // Same three metrics, but against the day-form *improvement* (RSCORE of this day minus
+  // the day before, −4..+4): does a good night lift the form relative to yesterday?
+  const p_dur1_imp=[], p_dur2_imp=[], p_onset_imp=[];
   // Rolling sleep averages set against the form: one bad night weighs less than an
   // accumulated debt, which these averages make visible.
   const p_durAvg2=[], p_durAvg3=[], p_durAvg5=[];
+  // Same idea for the sleep-onset time: night before last, and rolling means of the last
+  // 2 / 3 / 5 onsets, all against the day form.
+  const p_onset2=[], p_onsetAvg2=[], p_onsetAvg3=[], p_onsetAvg5=[];
   // Bedtime → night duration: independent of the form, so computed over every entry,
   // including those with no form recorded.
   allSorted.forEach(e => {
@@ -78,22 +88,37 @@ function buildCorrelations(opts = {}) {
     // previous night's sleep onset: same entry
     const sl = normalizeSleeps(e)[0];
     const t = sl && (sl.sleepStart || sl.bed || sl.bedtime);
+    const onset = sleepOnsetH(e);
     if (t) {
       const [h, m] = t.split(':').map(Number);
       p_onset.push([h >= 20 ? h+m/60 : h+m/60+24, score]);
     }
+    // Day-form improvement vs the day before (needs the previous day's form too): pair
+    // it with the previous night's onset/duration and the night-before-last's duration.
+    const prevScore = p1 ? RSCORE[p1.dayForm] : null;
+    if (prevScore) {
+      const imp = score - prevScore;
+      if (d1 !== null)    p_dur1_imp.push([d1, imp]);
+      if (d2 !== null)    p_dur2_imp.push([d2, imp]);
+      if (onset !== null) p_onset_imp.push([onset, imp]);
+    }
+    // onset avant-veille : entrée J-1
+    const o2 = p1 ? sleepOnsetH(p1) : null;
+    if (o2 !== null) p_onset2.push([o2, score]);
     // Means of the n nights preceding this form, entry D included. The point is kept
     // only if all n nights are recorded: a mean computed over a varying number of
     // nights would not be comparable from one point to the next.
-    [[2, p_durAvg2], [3, p_durAvg3], [5, p_durAvg5]].forEach(([n, out]) => {
-      const ds = [];
+    [[2, p_durAvg2, sleepDuration], [3, p_durAvg3, sleepDuration], [5, p_durAvg5, sleepDuration],
+     [2, p_onsetAvg2, sleepOnsetH], [3, p_onsetAvg3, sleepOnsetH], [5, p_onsetAvg5, sleepOnsetH]]
+    .forEach(([n, out, metric]) => {
+      const vs = [];
       for (let k = 0; k < n; k++) {
         const en = k === 0 ? e : prevEntry(e.dateStr, k);
-        const d  = en ? sleepDuration(en) : null;
-        if (d === null) return;
-        ds.push(d);
+        const v  = en ? metric(en) : null;
+        if (v === null) return;
+        vs.push(v);
       }
-      out.push([ds.reduce((a,b)=>a+b,0)/n, score]);
+      out.push([vs.reduce((a,b)=>a+b,0)/n, score]);
     });
   });
   // Habitudes globales + individuelles, impact selon sleepImpact ('same'|'next')
@@ -191,6 +216,22 @@ function buildCorrelations(opts = {}) {
       xFor: e => sleepOnsetH(e),
       pos: v => t('m_bed_early')(fmtDecH(v)), neg: v => t('m_bed_late')(fmtDecH(v)),
       focus: r => r < 0 ? t('f_early') : t('f_late') },
+    // Sleep onset before last, and the rolling means — mirror the duration set above.
+    { lbl:t('corr_onset_avv'),    w2:t('corr_forme_jour'), pairs:p_onset2,
+      buckets: bucketsFrom(onsetBands()), xFmt: v=>fmtDecH(v), yType:'form' },
+    { lbl:t('corr_onset_avg')(2), w2:t('corr_forme_jour'), pairs:p_onsetAvg2,
+      buckets: bucketsFrom(onsetBands()), xFmt: v=>fmtDecH(v), yType:'form' },
+    { lbl:t('corr_onset_avg')(3), w2:t('corr_forme_jour'), pairs:p_onsetAvg3,
+      buckets: bucketsFrom(onsetBands()), xFmt: v=>fmtDecH(v), yType:'form' },
+    { lbl:t('corr_onset_avg')(5), w2:t('corr_forme_jour'), pairs:p_onsetAvg5,
+      buckets: bucketsFrom(onsetBands()), xFmt: v=>fmtDecH(v), yType:'form' },
+    // Against the day-form improvement (Δ vs the day before) — yType 'delta'.
+    { lbl:t('corr_onset_veille'), w2:t('corr_forme_delta'), pairs:p_onset_imp,
+      buckets: bucketsFrom(onsetBands()), xFmt: v=>fmtDecH(v), yType:'delta' },
+    { lbl:t('corr_dur_veille'),   w2:t('corr_forme_delta'), pairs:p_dur1_imp,
+      buckets: bucketsFrom(durBands()),   xFmt: v=>fmtH(v),    yType:'delta' },
+    { lbl:t('corr_dur_avv'),      w2:t('corr_forme_delta'), pairs:p_dur2_imp,
+      buckets: bucketsFrom(durBands()),   xFmt: v=>fmtH(v),    yType:'delta' },
     { lbl:t('corr_bed'),          w2:t('corr_dur_nuit'),  pairs:p_bed_dur,
       buckets: bucketsFrom(onsetBands()),
       xFmt: v=>fmtDecH(v), yType:'duration',
@@ -234,8 +275,8 @@ function buildCorrelations(opts = {}) {
     const py = v => H - PB - (v - y0) / (y1 - y0) * (H - PT - PB);
     const dotCol = v => c.yType === 'form'
       ? (RCOLOR[RSCORE_INV[Math.round(v)]] || 'var(--muted)')
-      : durColor(v);
-    const yLbl = v => c.yType === 'form' ? (VLABEL[RSCORE_INV[Math.round(v)]] ?? '') : fmtH(v);
+      : c.yType === 'delta' ? deltaColor(v) : durColor(v);
+    const yLbl = v => c.yType === 'form' ? (VLABEL[RSCORE_INV[Math.round(v)]] ?? '') : c.yType === 'delta' ? fmtDelta(v) : fmtH(v);
 
     // Least-squares line — gives the direction of the link at a glance
     const n = pts.length;
@@ -245,7 +286,7 @@ function buildCorrelations(opts = {}) {
     const clipId = 'sc' + (_scatterId++);
 
     // Hover label: a wider transparent circle, so it is comfortable to aim at
-    const yFull = v => c.yType === 'form' ? (VNAME[RSCORE_INV[Math.round(v)]] ?? '–') : fmtH(v);
+    const yFull = v => c.yType === 'form' ? (VNAME[RSCORE_INV[Math.round(v)]] ?? '–') : c.yType === 'delta' ? fmtDelta(v) : fmtH(v);
     const dots = pts.map(([x,y]) => {
       const cx = px(x).toFixed(1), cy = py(y).toFixed(1);
       return `<g><title>${c.xFmt(x)} → ${yFull(y)}</title>`
@@ -280,6 +321,14 @@ function buildCorrelations(opts = {}) {
           <td style="padding:2px 12px 2px 0;font-size:0.76rem">${dot}${lbl}</td>
           <td style="padding:2px 8px;width:86px"><span style="display:inline-block;width:${Math.round(avg/5*70)}px;height:7px;border-radius:3px;background:${key?RCOLOR[key]:'var(--border)'}"></span></td>
           <td style="padding:2px 0;font-size:0.76rem;width:84px;color:${key?RCOLOR[key]:'var(--muted)'}">${key?VNAME[key]:'–'} <span style="color:var(--muted);font-size:0.7rem">(n=${vals.length})</span></td>
+        </tr>`;
+      } else if (c.yType === 'delta') {
+        // Signed form improvement (−4..+4): bar length ∝ |avg|, coloured by its sign.
+        const col = deltaColor(avg);
+        return `<tr>
+          <td style="padding:2px 12px 2px 0;font-size:0.76rem">${dot}${lbl}</td>
+          <td style="padding:2px 8px;width:86px"><span style="display:inline-block;width:${Math.round(Math.min(1,Math.abs(avg)/4)*70)}px;height:7px;border-radius:3px;background:${col}"></span></td>
+          <td style="padding:2px 0;font-size:0.76rem;width:84px;color:${col}">${fmtDelta(avg)} <span style="color:var(--muted);font-size:0.7rem">(n=${vals.length})</span></td>
         </tr>`;
       } else {
         const col = durColor(avg);
@@ -326,7 +375,15 @@ function buildCorrelations(opts = {}) {
       + three.map(c => `<div class="chart-card" style="margin-bottom:12px">${bucketChart(c)}</div>`).join('')
     : '';
 
-  return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard, html3 };
+  // Which nightly metric tracks the day form more tightly — used to order the duration
+  // and onset charts, the stronger one first. A null |r| (< 10 nights) counts as 0, so
+  // with too little data the default order (duration first) stands; onset only jumps
+  // ahead when it is *strictly* more correlated.
+  const rDurForm   = Math.abs(pearson(p_dur1.map(p=>p[0]),  p_dur1.map(p=>p[1]))  ?? 0);
+  const rOnsetForm = Math.abs(pearson(p_onset.map(p=>p[0]), p_onset.map(p=>p[1])) ?? 0);
+  const onsetFirst = rOnsetForm > rDurForm;
+
+  return { pearson, byDate, p_dur1, p_onset, corrSorted, html: statsCard, html3, onsetFirst };
 }
 
 // Expands one correlation's detail under its row. Global: the table is built as an
@@ -338,12 +395,6 @@ function toggleCorrDetail(idx) {
   row.style.display = open ? '' : 'none';
   const caret = document.getElementById('corr-caret-' + idx);
   if (caret) caret.textContent = open ? '▾' : '▸';
-}
-
-// Writes the analysis table into the Statistics tab.
-function renderCorrelations() {
-  const box = document.getElementById('corr-view');
-  if (box) box.innerHTML = buildCorrelations().html;
 }
 
 function renderSummary() {
@@ -359,7 +410,7 @@ function renderSummary() {
   const allSorted = [...entries].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
   const lastSleep = allSorted[allSorted.length - 1] ?? null;
 
-  const { pearson, byDate, p_dur1, p_onset, corrSorted, html3 } = buildCorrelations();
+  const { pearson, byDate, p_dur1, p_onset, corrSorted, html3, onsetFirst } = buildCorrelations();
 
   // Helper: z-score of value v relative to array arr
   function zOf(arr, v) {
@@ -538,21 +589,23 @@ function renderSummary() {
     for (let i = 2; i >= 0; i--) { const dd = new Date(d); dd.setDate(dd.getDate() - i); chartDates.push(dd.toISOString().split('T')[0]); } }
   const days3 = chartDates.map(ds => byDate[ds] ?? null);
   const xlabels3 = chartDates.map(nightAxisLabel);
-  const chartsCard = `
-    <div class="stats-flow" style="margin-bottom:12px">
+  const durChartCard = `
       <div class="chart-card">
         <h3>${t('chart_dur')}</h3>
         <div class="chart-goal"><span class="goal-dash"></span>${t('goal_label')} ${fmtH(durTargetH())}</div>
         <div class="chart-pane"><div class="chart-inner" style="height:180px"><canvas id="c-dur-sum"></canvas></div></div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem">${bandsLegendHtml(durBands())}</div>
-      </div>
+      </div>`;
+  const sleepChartCard = `
       <div class="chart-card">
         <h3>${t('chart_sleep')}</h3>
         <div class="chart-goal"><span class="goal-dash"></span>${t('goal_label')} ${fmtClock(sleepTarget)}</div>
         <div class="chart-pane"><div class="chart-inner" style="height:180px"><canvas id="c-sleep-sum"></canvas></div></div>
         <div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:10px;font-size:0.78rem">${bandsLegendHtml(onsetBands())}</div>
-      </div>
-    </div>`;
+      </div>`;
+  // Stronger predictor of the day form first (see onsetFirst in buildCorrelations).
+  const chartsCard = `
+    <div class="stats-flow" style="margin-bottom:12px">${onsetFirst ? sleepChartCard + durChartCard : durChartCard + sleepChartCard}</div>`;
 
   // Preview of the last 3 days — same rendering as the Entry preview, gathered in one card
   // Newest first

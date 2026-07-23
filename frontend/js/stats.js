@@ -188,15 +188,22 @@ function renderStats() {
   const days = allDates.map(d => entryMap[d] || null);
   const xlabels = allDates.map(nightAxisLabel);
 
+  // Correlations (over all entries) — used both for the analysis table at the bottom and
+  // to decide which of the two dot charts is the stronger predictor of the day form.
+  const corr = buildCorrelations();
+
   // Up to 7 days the two charts fit side by side, at equal width; beyond that each
   // takes the full width to stay readable.
   // On a narrow screen (mobile) each chart takes the full width regardless.
   { const SIDE_BY_SIDE_MAX_DAYS = 7, MIN_WIDTH_FOR_TWO = 760;
     const side = allDates.length <= SIDE_BY_SIDE_MAX_DAYS && window.innerWidth >= MIN_WIDTH_FOR_TWO;
-    ['c-dur-wrap', 'c-sleep-wrap'].forEach(id => {
-      const card = document.getElementById(id)?.closest('.chart-card');
-      if (card) card.style.flex = side ? '1 1 calc(50% - 9px)' : '1 1 100%';
-    }); }
+    const durCard   = document.getElementById('c-dur-wrap')?.closest('.chart-card');
+    const sleepCard = document.getElementById('c-sleep-wrap')?.closest('.chart-card');
+    [durCard, sleepCard].forEach(card => { if (card) card.style.flex = side ? '1 1 calc(50% - 9px)' : '1 1 100%'; });
+    // Stronger predictor of the day form first (Forme/Habitudes cards keep order 0).
+    if (durCard)   durCard.style.order   = corr.onsetFirst ? '2' : '1';
+    if (sleepCard) sleepCard.style.order = corr.onsetFirst ? '1' : '2';
+  }
 
   // 30 jours ou « Tout » : les frises et les graphes dépassent largement un écran
   // de téléphone en portrait.
@@ -293,8 +300,8 @@ function renderStats() {
   document.getElementById('sleep-legend').innerHTML = bandsLegendHtml(onsetBands());
   charts.sleep = onsetDotChart('c-sleep', days, xlabels);
 
-  // Correlation table, at the bottom of the tab (defined in summary.js).
-  renderCorrelations();
+  // Correlation table, at the bottom of the tab — reuse the set already computed above.
+  { const box = document.getElementById('corr-view'); if (box) box.innerHTML = corr.html; }
 }
 
 // ---- Tabs ----

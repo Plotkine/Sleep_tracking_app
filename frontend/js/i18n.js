@@ -46,8 +46,10 @@ const S = {
     // --- Correlations (Statistics tab) ---
     corr_dur_veille:'Durée nuit veille', corr_dur_avv:'Durée nuit avant-veille',
     corr_dur_avg: n => `Durée moy. ${n} dernières nuits`,
-    corr_forme_jour:'Forme du jour',
+    corr_forme_jour:'Forme du jour', corr_forme_delta:'Amélioration de la forme',
     corr_onset_veille:"Heure d'endormissement veille",
+    corr_onset_avv:"Heure d'endormissement avant-veille",
+    corr_onset_avg: n => `Endormissement moy. ${n} dernières nuits`,
     corr_bed:'Heure de coucher', corr_dur_nuit:'Durée nuit',
     corr_habits_kept:"Nombre d'habitudes respectées",
     corr_dur_same:'Durée nuit même jour', corr_dur_next:'Durée nuit lendemain',
@@ -169,8 +171,10 @@ const S = {
     // --- Correlations (Statistics tab) ---
     corr_dur_veille:'Previous night duration', corr_dur_avv:'Night-before-last duration',
     corr_dur_avg: n => `Avg. duration, last ${n} nights`,
-    corr_forme_jour:'Day form',
+    corr_forme_jour:'Day form', corr_forme_delta:'Day-form improvement',
     corr_onset_veille:'Previous night sleep onset',
+    corr_onset_avv:'Night-before-last sleep onset',
+    corr_onset_avg: n => `Avg. onset, last ${n} nights`,
     corr_bed:'Bedtime', corr_dur_nuit:'Night duration',
     corr_habits_kept:'Habits kept',
     corr_dur_same:'Same-day night duration', corr_dur_next:'Next-day night duration',
