@@ -163,10 +163,10 @@ function onsetDotChart(canvasId, days, xlabels) {
 function renderStats() {
   const sorted = [...entries].sort((a,b)=>a.dateStr.localeCompare(b.dateStr));
 
-  // Build continuous date range. The window ends at TODAY (the entry dated today — the
-  // night just gone / of this evening): once that night is recorded it counts, and
-  // while it is still empty the average simply falls back to the days that do have data.
-  const anchor = localDate();
+  // Build continuous date range. The window ends at YESTERDAY — the most recent
+  // *completed* night — so "3 jours" = hier, avant-hier, avant-avant-hier. The entry
+  // dated today (the night of this evening, still to come) is not part of it.
+  const anchor = yesterday();
   let startDate, endDate;
   if (statsRange === 0) {
     startDate = sorted.length ? sorted[0].dateStr : anchor;
@@ -186,7 +186,7 @@ function renderStats() {
   const entryMap = {};
   sorted.forEach(e => entryMap[e.dateStr] = e);
   const days = allDates.map(d => entryMap[d] || null);
-  const xlabels = allDates.map(d => new Date(d+'T12:00:00').toLocaleDateString(t('locale'),{day:'2-digit',month:'2-digit'}));
+  const xlabels = allDates.map(nightAxisLabel);
 
   // Up to 7 days the two charts fit side by side, at equal width; beyond that each
   // takes the full width to stay readable.

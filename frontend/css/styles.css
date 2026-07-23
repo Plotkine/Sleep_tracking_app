@@ -512,7 +512,8 @@ body { padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
   display: flex;
   align-items: center;
 }
-.sum-prev-lbl { width: 92px; font-size: 0.74rem; font-weight: 600; }
+/* Wide enough for the longest label ("Avant-avant-hier") on one line. */
+.sum-prev-lbl { width: 110px; font-size: 0.74rem; font-weight: 600; white-space: nowrap; }
 /* Le pied ne porte que la graduation : pas de barre à suivre, donc pas de décalage. */
 .sum-prev-foot > .sum-prev-lbl { height: auto; margin-top: 0; }
 .sum-prev-empty { height: 37px; display: flex; align-items: center; font-size: 0.74rem; color: var(--muted); }

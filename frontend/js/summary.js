@@ -350,12 +350,10 @@ function renderSummary() {
   const el = document.getElementById('summary-view');
   if (!el) return;
 
-  // `yest` carries today's form (entry dated D → form of D+1), used by the prediction.
-  // `today` is the anchor of the rolling windows: their most recent slot is the entry
-  // dated today — the night of this evening — which counts once recorded and otherwise
-  // leaves the average to the days that do have data.
+  // `yest` = the entry dated yesterday: it carries today's form (used by the prediction)
+  // and is the most recent *completed* night, so it anchors the rolling windows — "3
+  // derniers jours" = hier, avant-hier, avant-avant-hier (entries yest, yest-1, yest-2).
   const yest = yesterday();
-  const today = localDate();
 
   // ---- Mascot & statistics (computed over ALL entries) ----
   const allSorted = [...entries].sort((a,b) => a.dateStr.localeCompare(b.dateStr));
@@ -457,9 +455,9 @@ function renderSummary() {
     }
   }
 
-  // 3 stat cards — last 3 nights, ending at the entry dated today (see `today` above)
-  const s3d = new Date(today+'T12:00:00'); s3d.setDate(s3d.getDate() - 2);
-  const ranged3 = allSorted.filter(e => e.dateStr >= s3d.toISOString().split('T')[0] && e.dateStr <= today);
+  // 3 stat cards — last 3 completed nights (hier, avant-hier, avant-avant-hier)
+  const s3d = new Date(yest+'T12:00:00'); s3d.setDate(s3d.getDate() - 2);
+  const ranged3 = allSorted.filter(e => e.dateStr >= s3d.toISOString().split('T')[0] && e.dateStr <= yest);
 
   const durs3 = ranged3.map(e=>sleepDuration(e)).filter(d=>d!==null);
   const avgDur3 = durs3.length ? durs3.reduce((a,b)=>a+b,0)/durs3.length : null;
@@ -533,13 +531,13 @@ function renderSummary() {
   </div>`;
 
   // The two dot charts (duration + onset) over the same 3 nights as the cards and the
-  // preview — [today-2, today-1, today], ascending — built with the shared builders
-  // from stats.js. Placed above the 3-line preview.
+  // preview — [yest-2, yest-1, yest], ascending — built with the shared builders from
+  // stats.js. Placed above the 3-line preview.
   const chartDates = [];
-  { const d = new Date(today+'T12:00:00');
+  { const d = new Date(yest+'T12:00:00');
     for (let i = 2; i >= 0; i--) { const dd = new Date(d); dd.setDate(dd.getDate() - i); chartDates.push(dd.toISOString().split('T')[0]); } }
   const days3 = chartDates.map(ds => byDate[ds] ?? null);
-  const xlabels3 = chartDates.map(ds => new Date(ds+'T12:00:00').toLocaleDateString(t('locale'), {day:'2-digit', month:'2-digit'}));
+  const xlabels3 = chartDates.map(nightAxisLabel);
   const chartsCard = `
     <div class="stats-flow" style="margin-bottom:12px">
       <div class="chart-card">
@@ -559,7 +557,7 @@ function renderSummary() {
   // Preview of the last 3 days — same rendering as the Entry preview, gathered in one card
   // Newest first
   const prevDays = [];
-  { const d = new Date(today+'T12:00:00');
+  { const d = new Date(yest+'T12:00:00');
     for (let i = 0; i < 3; i++) {
       const ds = d.toISOString().split('T')[0];
       prevDays.push({ ds, e: byDate[ds] ?? null });
@@ -573,8 +571,8 @@ function renderSummary() {
   const previewCard = `
     <div class="chart-card sum-preview" style="margin-bottom:12px">
       ${prevDays.map(({ds, e}, i) => {
-        // The night dated yesterday carries today's day form
-        const label = [t('d_today'), t('d_yesterday'), t('d_before')][i];
+        // Newest first — the 3 completed nights: hier (entry yest), avant-hier, avant-avant-hier
+        const label = [t('d_yesterday'), t('d_before'), t('d_before2')][i];
         const dateTip = new Date(ds+'T12:00:00').toLocaleDateString(t('locale'), {weekday:'long', day:'2-digit', month:'long'});
         return `<div class="sum-prev-row"${i ? ' style="margin-top:6px"' : ''}>
             <span class="sum-prev-lbl" title="${t('night_of_one')(dateTip)}">${label}</span>

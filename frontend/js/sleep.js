@@ -93,6 +93,16 @@ function fmtH(h) {
   return `${hh}${clockSep()}${String(mm).padStart(2,'0')}`;
 }
 
+// X-axis label for a night dated `ds`: both dates it spans (J and J+1), e.g.
+// "22/07–23/07", so a dot is never mistaken for the night that starts *or* ends on a
+// single date. Locale-ordered, so it reads correctly in EN too.
+function nightAxisLabel(ds) {
+  const loc = t('locale'), opt = { day: '2-digit', month: '2-digit' };
+  const d0 = new Date(ds + 'T12:00:00');
+  const d1 = new Date(d0); d1.setDate(d1.getDate() + 1);
+  return `${d0.toLocaleDateString(loc, opt)}–${d1.toLocaleDateString(loc, opt)}`;
+}
+
 function fmtDate(ds) {
   const loc = t('locale');
   const d = new Date(ds + 'T12:00:00');
