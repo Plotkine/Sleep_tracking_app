@@ -125,11 +125,32 @@ function buildCorrelations(opts = {}) {
   const trackedHabits = habits.filter(h=>h.tracked!==false);
   const p_hab_ind = trackedHabits.map(h => ({ h, pairs:[] }));
   const p_hab_dur_same = [], p_hab_dur_next = [];
+  // Évènements : un par variable, contre la durée de la nuit ET contre la forme du jour.
+  // Une habitude n'est corrélée qu'à la durée — c'est un levier de sommeil. Un évènement
+  // est subi, et la question intéressante est autant « qu'est-ce que ça fait à ma
+  // journée » que « qu'est-ce que ça fait à ma nuit ».
+  const trackedEvents = events.filter(v => v.tracked !== false);
+  const p_ev_dur  = trackedEvents.map(v => ({ v, pairs: [] }));
+  const p_ev_form = trackedEvents.map(v => ({ v, pairs: [] }));
   allSorted.forEach(e => {
     const nd = new Date(e.dateStr+'T12:00:00'); nd.setDate(nd.getDate()+1);
     const nextE = byDate[nd.toISOString().split('T')[0]];
     const durSame = sleepDuration(e);
     const durNext = nextE ? sleepDuration(nextE) : null;
+    // La forme qui suit la nuit « même jour » est celle de l'entrée elle-même (une
+    // entrée J porte la nuit J→J+1 *et* la forme de J+1) ; celle qui suit la nuit du
+    // lendemain est portée par l'entrée suivante.
+    const formSame = RSCORE[e.dayForm] ?? null;
+    const formNext = nextE ? (RSCORE[nextE.dayForm] ?? null) : null;
+    p_ev_dur.forEach(({v, pairs}, i) => {
+      const st = eventState(e, v.id);
+      if (st === null) return;
+      const impact = v.sleepImpact || 'same';
+      const dur  = impact === 'same' ? durSame  : durNext;
+      const form = impact === 'same' ? formSame : formNext;
+      if (dur  !== null) pairs.push([st, dur]);
+      if (form !== null) p_ev_form[i].pairs.push([st, form]);
+    });
     // agrégats séparés par impact
     const sameIds = trackedHabits.filter(h=>(h.sleepImpact||'next')==='same').map(h=>h.id);
     const nextIds = trackedHabits.filter(h=>(h.sleepImpact||'next')==='next').map(h=>h.id);
@@ -251,6 +272,30 @@ function buildCorrelations(opts = {}) {
       buckets:[[t('b_notdone'),v=>v===0],[t('b_done'),v=>v===1]],
       xFmt: v=>v===1?t('b_done'):t('b_notdone'), yType:'duration',
       focus: r => r > 0 ? t('f_habp')(h.name) : t('f_habn')(h.name),
+    })),
+    // Évènements : pas de `focus`. Conseiller « tiens X » n'a de sens que pour une
+    // habitude ; un évènement se constate, il ne se décide pas.
+    ...p_ev_dur.map(({v, pairs}) => ({
+      lbl: v.name,
+      w2: (v.sleepImpact||'same') === 'same' ? t('corr_dur_same') : t('corr_dur_next'),
+      pairs,
+      buckets:[[t('ev_no'),x=>x===0],[t('ev_yes'),x=>x===1]],
+      xFmt: x=>x===1?t('ev_yes'):t('ev_no'), yType:'duration',
+    })),
+    // Contre la forme : ceux-là portent `xFor`/`pos`/`neg`, donc ils peuvent nourrir la
+    // prévision de la mascotte. `xFor` remonte à l'entrée qui porte l'évènement — la
+    // même pour un impact « J », celle de la veille pour un impact « J+1 ».
+    ...p_ev_form.map(({v, pairs}) => ({
+      lbl: v.name, w2: t('corr_forme_jour'), pairs,
+      buckets:[[t('ev_no'),x=>x===0],[t('ev_yes'),x=>x===1]],
+      xFmt: x=>x===1?t('ev_yes'):t('ev_no'), yType:'form',
+      xFor: e => (v.sleepImpact||'same') === 'same'
+        ? eventState(e, v.id)
+        : eventState(prevEntry(e.dateStr, 1), v.id),
+      // Le fait est le même quel que soit le signe : c'est le verdict de la phrase qui
+      // porte la direction, pas la formulation de la raison.
+      pos: x => x === 1 ? t('r_ev_yes')(v.name) : t('r_ev_no')(v.name),
+      neg: x => x === 1 ? t('r_ev_yes')(v.name) : t('r_ev_no')(v.name),
     })),
   ];
   const corrSorted = corrList.map(c=>({...c, abs:Math.abs(pearson(c.pairs.map(p=>p[0]),c.pairs.map(p=>p[1]))??0)}))
@@ -514,12 +559,10 @@ function renderSummary() {
   const avgDur3 = durs3.length ? durs3.reduce((a,b)=>a+b,0)/durs3.length : null;
   const avgDurHtml = avgDur3 !== null ? `<span style="color:${durColor(avgDur3)}">${fmtH(avgDur3)}</span>` : '–';
 
-  const beds3 = ranged3.map(e => {
-    const sl = normalizeSleeps(e)[0];
-    const t = sl && (sl.bed || sl.sleepStart); if (!t) return null;
-    const [h,m] = t.split(':').map(Number);
-    return h >= 20 ? h+m/60 : h+m/60+24;
-  }).filter(v=>v!==null);
+  // Sleep onset, not bedtime: the card is coloured on the onset bands and compared with
+  // the sleep-onset target, and it sits right above the onset chart — reading "heure de
+  // coucher" there while the chart plotted the onset made the average look wrong.
+  const beds3 = ranged3.map(sleepOnsetH).filter(v=>v!==null);
   const avgBed3 = beds3.length ? beds3.reduce((a,b)=>a+b,0)/beds3.length : null;
   const avgBedHtml = avgBed3 !== null ? `<span style="color:${onsetColor(avgBed3)}">${fmtDecH(avgBed3)}</span>` : '–';
 

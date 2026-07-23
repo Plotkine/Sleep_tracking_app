@@ -15,11 +15,21 @@ function sleepOnsetH(e) {
 // clock time.
 function clockSep() { return lang === 'en' ? ':' : 'h'; }
 
+// A clock time from its two parts. On the hour the minutes are dropped in French —
+// "00h" says exactly what "00h00" said, with less noise. English keeps "00:00": a bare
+// "00" would not read as a time of day. Durations follow the same rule in fmtH.
+function fmtClockParts(h, m) {
+  const hh = String(h).padStart(2,'0');
+  if (m === 0) return lang === 'en' ? `${hh}:00` : `${hh}h`;
+  return `${hh}${clockSep()}${String(m).padStart(2,'0')}`;
+}
+
 // Decimal hour (23.25) -> "23h15" / "23:15"
 function fmtDecH(v) {
-  const dec = v >= 24 ? v - 24 : v;
-  const hh = Math.floor(dec), mm = Math.round((dec % 1) * 60);
-  return `${String(hh).padStart(2,'0')}${clockSep()}${String(mm).padStart(2,'0')}`;
+  let hh = Math.floor(v), mm = Math.round((v % 1) * 60);
+  if (mm === 60) { hh += 1; mm = 0; }   // 23.999 must give 00h, not 23h60
+  if (hh >= 24) hh -= 24;
+  return fmtClockParts(hh, mm);
 }
 
 // Hour tick on the 24 h ruler. French labels them "20h"; English uses the bare number,
@@ -30,7 +40,8 @@ function fmtHourTick(h) { return lang === 'en' ? String(h) : `${h}h`; }
 // Storage itself always stays "HH:MM": this is for display only.
 function fmtClock(t) {
   if (!t || !/^\d{1,2}:\d{2}$/.test(t)) return t || '';
-  return t.replace(':', clockSep());
+  const [h, m] = t.split(':').map(Number);
+  return fmtClockParts(h, m);
 }
 function timeFrac(t) {
   if (!t) return null;

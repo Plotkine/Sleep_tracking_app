@@ -27,7 +27,7 @@ const S = {
     m_focus: f => `À privilégier : ${f} — c'est le lien le plus marqué de tes données.`,
     m_nofocus:"Aucun lien encore assez net pour désigner une priorité — continue à encoder tes nuits.",
     m_tracking:'Tu suis en ce moment :',
-    c_dur_avg:'Durée de sommeil moy.', c_bed_avg:'Heure de coucher moy.',
+    c_dur_avg:'Durée de sommeil moy.', c_bed_avg:"Heure d'endormissement moy.",
     c_form_avg:'Forme moy.', c_hab_avg:'Habitudes respectées moy.',
     none_period:'Aucune nuit enregistrée sur cette période.', none_day:'Aucune donnée encodée.',
     corr_v1:'Variable 1', corr_v2:'Variable 2', corr_r:'Corrélation', corr_n:'Paires',
@@ -39,6 +39,13 @@ const S = {
     // --- Habitudes ---
     hb_none:'Aucune habitude suivie. Gérez-les dans l\'onglet Objectifs.',
     hb_tracked:'Suivies', hb_untracked:'Pas suivies', hb_notenc:'Non encodé',
+    // --- Évènements (subis : pas de conseil, seulement de la mesure) ---
+    events_card:'Évènements', add_event:'+ Ajouter', ev_new_ph:'Nouvel évènement…',
+    ev_none:"Aucun évènement suivi. Gérez-les dans l'onglet Objectifs.",
+    ev_none_short:'Aucun évènement suivi.',
+    ev_yes:"S'est produit", ev_no:"Ne s'est pas produit",
+    ev_tracked:'Suivis', ev_untracked:'Pas suivis',
+    r_ev_yes: n => `« ${n} »`, r_ev_no: n => `pas de « ${n} »`,
     // --- Divers ---
     goal_label:'Objectif :', loaded_edit:'✏️ Entrée chargée pour modification',
     deleted_entry:'🗑 Entrée supprimée', del_again:'Cliquer à nouveau pour confirmer la suppression',
@@ -98,7 +105,7 @@ const S = {
     bk_choose:'Choisir où enregistrer',
     bk_exported_dl: n => `Exporté : ${n} — dossier Téléchargements.`,
     bk_imported: n => `${n} nuit${n>1?'s':''} importée${n>1?'s':''}.`,
-    bk_confirm: (n, h) => `Fichier valide : ${n} nuit${n>1?'s':''}, ${h} habitude${h>1?'s':''}.`,
+    bk_confirm: (n, h, v) => `Fichier valide : ${n} nuit${n>1?'s':''}, ${h} habitude${h>1?'s':''}, ${v} évènement${v>1?'s':''}.`,
     bk_err_json:'Fichier illisible : ce n\'est pas du JSON valide.',
     bk_err_shape:"Ce fichier n'est pas une sauvegarde de l'agenda.",
     bk_err_entries:'Sauvegarde corrompue : une nuit est sans date.',
@@ -152,7 +159,7 @@ const S = {
     m_focus: f => `Focus on: ${f} — it is the strongest link in your data.`,
     m_nofocus:'No link is clear enough yet to single out a priority — keep recording your nights.',
     m_tracking:'You are currently tracking:',
-    c_dur_avg:'Avg. sleep duration', c_bed_avg:'Avg. bedtime',
+    c_dur_avg:'Avg. sleep duration', c_bed_avg:'Avg. sleep onset',
     c_form_avg:'Avg. form', c_hab_avg:'Avg. habits kept',
     none_period:'No night recorded over this period.', none_day:'No data recorded.',
     corr_v1:'Variable 1', corr_v2:'Variable 2', corr_r:'Correlation', corr_n:'Pairs',
@@ -164,6 +171,13 @@ const S = {
     // --- Habits ---
     hb_none:'No habit tracked. Manage them in the Goals tab.',
     hb_tracked:'Tracked', hb_untracked:'Not tracked', hb_notenc:'Not recorded',
+    // --- Events (out of your hands: measured, never advised on) ---
+    events_card:'Events', add_event:'+ Add', ev_new_ph:'New event…',
+    ev_none:'No event tracked. Manage them in the Goals tab.',
+    ev_none_short:'No event tracked.',
+    ev_yes:'Happened', ev_no:'Did not happen',
+    ev_tracked:'Tracked', ev_untracked:'Not tracked',
+    r_ev_yes: n => `"${n}"`, r_ev_no: n => `no "${n}"`,
     // --- Misc ---
     goal_label:'Target:', loaded_edit:'✏️ Entry loaded for editing',
     deleted_entry:'🗑 Entry deleted', del_again:'Click again to confirm deletion',
@@ -222,7 +236,7 @@ const S = {
     bk_choose:'Choose where to save',
     bk_exported_dl: n => `Exported: ${n} — Downloads folder.`,
     bk_imported: n => `${n} night${n>1?'s':''} imported.`,
-    bk_confirm: (n, h) => `Valid file: ${n} night${n>1?'s':''}, ${h} habit${h>1?'s':''}.`,
+    bk_confirm: (n, h, v) => `Valid file: ${n} night${n>1?'s':''}, ${h} habit${h>1?'s':''}, ${v} event${v>1?'s':''}.`,
     bk_err_json:'Unreadable file: not valid JSON.',
     bk_err_shape:'This file is not a sleep-diary backup.',
     bk_err_entries:'Corrupt backup: one night has no date.',
@@ -277,6 +291,8 @@ function applyLang() {
     'lbl-chart-dur':'chart_dur','lbl-chart-form':'chart_form','lbl-chart-sleep':'chart_sleep',
     'lang-toggle':'lang_btn',
     'lbl-habits-card':'habits_card','btn-add-habit':'add_habit',
+    'lbl-events-card':'events_card','btn-add-event':'add_event',
+    'lbl-ev-form-card':'events_card','lbl-viz-ev':'events_card',
     'lbl-dur-target':'chart_dur_short','lbl-sleep-target':'chart_sleep',
     'lbl-hab-form-card':'card_habits_t','lbl-goals-card':'card_goals',
     'lbl-stat-bed':'c_bed_avg','lbl-stat-hab':'c_hab_avg',
@@ -289,6 +305,7 @@ function applyLang() {
   Object.entries(ids).forEach(([id,k])=>{ const el=document.getElementById(id); if(el) el.textContent=t(k); });
   document.getElementById('f-notes').placeholder = t('notes_ph');
   document.getElementById('new-habit-input').placeholder = t('hb_new_ph');
+  document.getElementById('new-event-input').placeholder = t('ev_new_ph');
   const ds = getDateValue();
   if (ds) setDateValue(ds);
   document.getElementById('cal-btn-lbl').title = t('cal_title');

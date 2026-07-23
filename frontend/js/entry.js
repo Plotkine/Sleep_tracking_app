@@ -220,6 +220,8 @@ function getFormEntry() {
     notes: document.getElementById('f-notes').value,
     habits: getHabitStates().done,
     habitsNotDone: getHabitStates().notDone,
+    events: getEventStates().done,
+    eventsAbsent: getEventStates().absent,
   };
 }
 
@@ -341,6 +343,7 @@ function onDateChange() {
     ratings = {day:null};
     document.querySelectorAll('.rating-btn').forEach(b=>b.classList.remove('sel'));
     renderHabitsForm(null, null);
+    renderEventsForm(null, null);
     document.getElementById('save-btn').textContent = t('save_btn');
     document.getElementById('delete-day-btn').style.display = 'none';
     updatePreview();
@@ -370,6 +373,7 @@ function fillFormFromEntry(e) {
   document.querySelectorAll('#rg-day .rating-btn').forEach(b =>
     b.classList.toggle('sel', b.dataset.v === e.dayForm));
   renderHabitsForm(e.habits ?? null, e.habitsNotDone ?? null);
+  renderEventsForm(e.events ?? null, e.eventsAbsent ?? null);
   updatePreview();
 }
 
@@ -383,6 +387,7 @@ function resetForm() {
   ratings = {day:null};
   document.querySelectorAll('.rating-btn').forEach(b=>b.classList.remove('sel'));
   renderHabitsForm(null, null);
+  renderEventsForm(null, null);
   document.getElementById('save-btn').textContent = t('save_btn');
   document.getElementById('delete-day-btn').style.display = 'none';
   updatePreview();

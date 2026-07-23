@@ -1,8 +1,8 @@
 // ---- Backup: export / import of the whole dataset ----
 //
-// A single JSON file carries everything the user produced: nights, habits and both
-// targets. It is the exchange format between the web app and the Android app, which
-// share no storage.
+// A single JSON file carries everything the user produced: nights, habits, events and
+// both targets. It is the exchange format between the web app and the Android app,
+// which share no storage.
 
 const BACKUP_FORMAT = 1;   // bump if the structure changes incompatibly
 
@@ -15,6 +15,7 @@ function buildBackup() {
     exportedAt: new Date().toISOString(),
     entries,
     habits,
+    events,
     targets: { durTarget, sleepTarget },
   };
 }
@@ -116,6 +117,8 @@ function parseBackup(text) {
   if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(t('bk_err_shape'));
   if (!Array.isArray(data.entries)) throw new Error(t('bk_err_shape'));
   if (data.habits != null && !Array.isArray(data.habits)) throw new Error(t('bk_err_shape'));
+  // `events` est apparu après le format 1 : une sauvegarde qui n'en a pas reste valide.
+  if (data.events != null && !Array.isArray(data.events)) throw new Error(t('bk_err_shape'));
   // An entry without a date could not be displayed anywhere.
   if (data.entries.some(e => !e || typeof e.dateStr !== 'string')) throw new Error(t('bk_err_entries'));
   return data;
@@ -133,8 +136,9 @@ function onImportFile(input) {
       _pendingImport = parseBackup(String(reader.result));
       const n = _pendingImport.entries.length;
       const h = (_pendingImport.habits || []).length;
+      const v = (_pendingImport.events || []).length;
       document.getElementById('import-confirm').style.display = '';
-      document.getElementById('import-summary').textContent = t('bk_confirm')(n, h);
+      document.getElementById('import-summary').textContent = t('bk_confirm')(n, h, v);
       showBackupStatus('');
     } catch (err) {
       _pendingImport = null;
@@ -162,7 +166,8 @@ async function confirmImport() {
   entries = data.entries;
   entries.sort((a, b) => b.dateStr.localeCompare(a.dateStr));
   if (Array.isArray(data.habits)) habits = data.habits;
-  await Promise.all([saveToServer(), saveHabits()]);
+  if (Array.isArray(data.events)) events = data.events;
+  await Promise.all([saveToServer(), saveHabits(), saveEvents()]);
 
   if (data.targets) {
     if (data.targets.durTarget)   updateDurTarget(data.targets.durTarget);
@@ -172,6 +177,8 @@ async function confirmImport() {
 
   renderHabitsManage();
   renderHabitsForm(null, null);
+  renderEventsManage();
+  renderEventsForm(null, null);
   onDateChange();
   updateDayPicks();
   renderSummary();

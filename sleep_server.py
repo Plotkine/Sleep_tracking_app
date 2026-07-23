@@ -10,12 +10,13 @@ HTML_FILE = FRONTEND_DIR / 'sleep_agenda.html'
 DATA_DIR = DIR / 'data'
 DATA_FILE   = DATA_DIR / 'sleep_data.json'
 HABITS_FILE     = DATA_DIR / 'habits.json'
+EVENTS_FILE     = DATA_DIR / 'events.json'
 CATEGORIES_FILE = DATA_DIR / 'categories.json'
 PORT = 8742
 
 
 def ensure_data_files():
-    """Create data/ and the three empty files if they are missing.
+    """Create data/ and the empty data files if they are missing.
 
     `data/` is excluded from the repository (personal data), so a fresh clone has no
     trace of it: without this initialisation the first save would fail, since
@@ -23,7 +24,7 @@ def ensure_data_files():
     An existing file is never touched — least of all overwritten.
     """
     DATA_DIR.mkdir(parents=True, exist_ok=True)
-    for f in (DATA_FILE, HABITS_FILE, CATEGORIES_FILE):
+    for f in (DATA_FILE, HABITS_FILE, EVENTS_FILE, CATEGORIES_FILE):
         if not f.exists():
             f.write_bytes(b'[]')
 
@@ -57,6 +58,9 @@ class Handler(BaseHTTPRequestHandler):
         elif self.path == '/api/habits':
             data = HABITS_FILE.read_bytes() if HABITS_FILE.exists() else b'[]'
             self._respond(200, 'application/json', data)
+        elif self.path == '/api/events':
+            data = EVENTS_FILE.read_bytes() if EVENTS_FILE.exists() else b'[]'
+            self._respond(200, 'application/json', data)
         elif self.path == '/api/categories':
             data = CATEGORIES_FILE.read_bytes() if CATEGORIES_FILE.exists() else b'[]'
             self._respond(200, 'application/json', data)
@@ -78,6 +82,12 @@ class Handler(BaseHTTPRequestHandler):
             body = self.rfile.read(n)
             json.loads(body)
             HABITS_FILE.write_bytes(body)
+            self._respond(200, 'application/json', b'{"ok":true}')
+        elif self.path == '/api/events':
+            n = int(self.headers.get('Content-Length', 0))
+            body = self.rfile.read(n)
+            json.loads(body)
+            EVENTS_FILE.write_bytes(body)
             self._respond(200, 'application/json', b'{"ok":true}')
         elif self.path == '/api/categories':
             n = int(self.headers.get('Content-Length', 0))

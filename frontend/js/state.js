@@ -1,5 +1,8 @@
 let entries = [];
 let habits  = [];
+// Évènements subis (travail en présentiel, invités…) : mêmes champs qu'une habitude,
+// mais rien à « respecter » — ils ne servent qu'aux corrélations.
+let events  = [];
 
 let entryMode = 'detailed';
 
@@ -42,6 +45,13 @@ async function loadHabits() {
 }
 async function saveHabits() {
   await storeSave('habits', habits);
+}
+
+async function loadEvents() {
+  events = await storeLoad('events');
+}
+async function saveEvents() {
+  await storeSave('events', events);
 }
 
 async function load() {

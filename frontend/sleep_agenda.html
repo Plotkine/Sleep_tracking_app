@@ -135,6 +135,13 @@
         <div id="habits-form-list"></div>
       </div>
 
+      <!-- Évènements : ce qu'on subit (travail en présentiel, invités…). Encodés
+           comme les habitudes, mais ils ne servent qu'aux corrélations. -->
+      <div class="card">
+        <h2>📌 <span id="lbl-ev-form-card">Évènements</span></h2>
+        <div id="events-form-list"></div>
+      </div>
+
       <div class="card" id="notes-card">
         <h2 id="lbl-notes-card">📝 Remarques</h2>
         <div class="field">
@@ -237,6 +244,14 @@
         <button class="habit-add-btn" id="btn-add-habit" onclick="addHabit()">+ Ajouter</button>
       </div>
     </div>
+    <div class="card">
+      <h2>📌 <span id="lbl-events-card">Évènements</span></h2>
+      <div id="events-manage-list"></div>
+      <div class="habit-add-row">
+        <input type="text" id="new-event-input" class="habit-add-input" placeholder="" onkeydown="if(event.key==='Enter')addEvent()">
+        <button class="habit-add-btn" id="btn-add-event" onclick="addEvent()">+ Ajouter</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -251,7 +266,7 @@
   <div id="stats-rotate"></div>
   <div class="stats-grid" style="grid-template-columns:repeat(4,1fr)">
     <div class="stat-card"><div class="sv" id="s-avg">–</div><div class="sl" id="lbl-stat-avg">Durée de sommeil moy.</div></div>
-    <div class="stat-card"><div class="sv" id="s-bed">–</div><div class="sl" id="lbl-stat-bed">Heure de coucher moy.</div></div>
+    <div class="stat-card"><div class="sv" id="s-bed">–</div><div class="sl" id="lbl-stat-bed">Heure d'endormissement moy.</div></div>
     <div class="stat-card"><div class="sv" id="s-qual">–</div><div class="sl" id="lbl-stat-form">Forme moy.</div></div>
     <div class="stat-card"><div class="sv" id="s-habits">–</div><div class="sl" id="lbl-stat-hab">Habitudes respectées moy.</div></div>
   </div>
@@ -264,6 +279,10 @@
     <div class="chart-card">
       <h3 id="lbl-viz-hab">Habitudes</h3>
       <div id="habits-viz"></div>
+    </div>
+    <div class="chart-card">
+      <h3 id="lbl-viz-ev">Évènements</h3>
+      <div id="events-viz"></div>
     </div>
     <div class="chart-card">
       <h3 id="lbl-chart-dur">Durée de sommeil par nuit</h3>
@@ -294,6 +313,7 @@
   <script src="/js/timepicker.js"></script>
   <script src="/js/entry.js"></script>
   <script src="/js/habits.js"></script>
+  <script src="/js/events.js"></script>
   <script src="/js/mascot.js"></script>
   <script src="/js/history.js"></script>
   <script src="/js/summary.js"></script>

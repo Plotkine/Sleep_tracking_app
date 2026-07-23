@@ -9,7 +9,7 @@
 // the server disappears mid-session. The rest of the code only calls storeLoad /
 // storeSave and never knows which backend is active.
 
-const LS_KEYS = { entries: 'sleepEntries', habits: 'sleepHabits' };
+const LS_KEYS = { entries: 'sleepEntries', habits: 'sleepHabits', events: 'sleepEvents' };
 
 let _serverAvailable = false;   // decided by storeDetectBackend(), at startup
 
@@ -39,7 +39,7 @@ function _lsWrite(kind, data) {
   catch { /* quota exceeded or storage refused: do not block the app */ }
 }
 
-// `kind` is 'entries' or 'habits' — the two persisted collections.
+// `kind` is 'entries', 'habits' or 'events' — the persisted collections.
 async function storeLoad(kind) {
   if (_serverAvailable) {
     try {

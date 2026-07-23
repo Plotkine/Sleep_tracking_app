@@ -95,9 +95,11 @@ async function init() {
   setDateValue(defaultDate());
   // Choisit API serveur ou localStorage avant le moindre chargement.
   await storeDetectBackend();
-  await Promise.all([load(), loadHabits()]);
+  await Promise.all([load(), loadHabits(), loadEvents()]);
   renderHabitsForm(null, null);
   renderHabitsManage();
+  renderEventsForm(null, null);
+  renderEventsManage();
   applyLang();
   onDateChange();
   updateDayPicks();

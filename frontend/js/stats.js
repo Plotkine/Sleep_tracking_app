@@ -152,7 +152,7 @@ function onsetDotChart(canvasId, days, xlabels) {
         x: { offset: true, grid: { display: false }, ticks: { maxRotation: 45, minRotation: 45, font: { size: 10 }, padding: 4 } },
         y: {
           min: 20, max: 30, reverse: true,
-          ticks: { stepSize: 1, callback: v => { const h = v >= 24 ? v - 24 : v; return `${String(h).padStart(2,'0')}${clockSep()}00`; } },
+          ticks: { stepSize: 1, callback: v => fmtDecH(v) },
         }
       }
     },
@@ -212,11 +212,12 @@ function renderStats() {
 
   renderFormViz(days, allDates);
   renderHabitsViz(days, 'habits-viz', allDates);
+  renderEventsViz(days, 'events-viz', allDates);
 
-  // Form / Habits: a horizontal scrollbar means the card is too cramped at half
-  // width — it is then given the whole row.
+  // Form / Habits / Events: a horizontal scrollbar means the card is too cramped at
+  // half width — it is then given the whole row.
   requestAnimationFrame(() => {
-    ['form-viz-scroll', 'habits-viz-scroll'].forEach(id => {
+    ['form-viz-scroll', 'habits-viz-scroll', 'events-viz-scroll'].forEach(id => {
       const sc = document.getElementById(id);
       const card = sc?.closest('.chart-card');
       if (!card) return;
@@ -238,13 +239,8 @@ function renderStats() {
   document.getElementById('s-avg').innerHTML = avgDur !== null
     ? `<span style="color:${durColor(avgDur)}">${fmtH(avgDur)}</span>` : '–';
 
-  const bedTimes = ranged.map(e => {
-    const sl = normalizeSleeps(e)[0];
-    const t = sl && (sl.bed || sl.sleepStart);
-    if (!t) return null;
-    const [h, m] = t.split(':').map(Number);
-    return h >= 20 ? h + m / 60 : h + m / 60 + 24;
-  }).filter(v => v !== null);
+  // Sleep onset, like the chart below and like the target it is coloured against.
+  const bedTimes = ranged.map(sleepOnsetH).filter(v => v !== null);
   const avgBed = bedTimes.length ? bedTimes.reduce((a,b)=>a+b,0)/bedTimes.length : null;
   document.getElementById('s-bed').innerHTML = avgBed !== null
     ? `<span style="color:${onsetColor(avgBed)}">${fmtDecH(avgBed)}</span>` : '–';
