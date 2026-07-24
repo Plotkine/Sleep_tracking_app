@@ -30,6 +30,9 @@
   <a href="/statistics" id="nav-statistics" onclick="event.preventDefault();showTab('statistics')">
     <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/></svg><span class="nav-lbl" id="nav-lbl-statistics">Statistiques</span>
   </a>
+  <a href="/regression" id="nav-regression" onclick="event.preventDefault();showTab('regression')">
+    <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><line x1="4" y1="3" x2="4" y2="21"/><line x1="4" y1="21" x2="21" y2="21"/><line x1="6" y1="18" x2="20" y2="7"/><circle cx="8" cy="16" r="1"/><circle cx="13" cy="12" r="1"/><circle cx="17" cy="9" r="1"/></svg><span class="nav-lbl" id="nav-lbl-regression">Régression</span>
+  </a>
   <a href="/habits"     id="nav-habits"     onclick="event.preventDefault();showTab('habits')">
     <svg class="nav-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.5"/></svg><span class="nav-lbl" id="nav-lbl-habits">Objectifs</span>
   </a>
@@ -303,6 +306,12 @@
   <div id="corr-view" style="margin-top:16px"></div>
 </div>
 
+<!-- RÉGRESSION : régression linéaire multiple forme du jour ~ toutes les variables.
+     Calculée sur toutes les entrées (regression.js). -->
+<div id="tab-regression" class="tab">
+  <div id="regression-view"></div>
+</div>
+
   <script src="/js/ratings.js"></script>
   <script src="/js/i18n.js"></script>
   <script src="/js/colors.js"></script>
@@ -318,6 +327,7 @@
   <script src="/js/history.js"></script>
   <script src="/js/summary.js"></script>
   <script src="/js/stats.js"></script>
+  <script src="/js/regression.js"></script>
   <script src="/js/backup.js"></script>
   <script src="/js/app.js"></script>
 <div id="save-status" class="save-status"></div>

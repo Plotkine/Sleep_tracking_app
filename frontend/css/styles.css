@@ -47,7 +47,7 @@ nav {
 }
 
 nav a {
-  flex: 1 1 0;              /* six onglets de largeur égale */
+  flex: 1 1 0;              /* sept onglets de largeur égale */
   min-width: 0;
   display: flex;
   flex-direction: column;
@@ -90,7 +90,7 @@ nav a:hover:not(.active) { color: var(--text); }
    reste atteignable. */
 body { padding-bottom: calc(62px + env(safe-area-inset-bottom, 0px)); }
 
-/* Trop étroit pour six libellés : on ne garde que les icônes, agrandies. */
+/* Trop étroit pour sept libellés : on ne garde que les icônes, agrandies. */
 @media (max-width: 560px) {
   .nav-lbl { display: none; }
   .nav-ico { width: 24px; height: 24px; }

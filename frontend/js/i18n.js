@@ -4,7 +4,21 @@ const S = {
   fr: {
     nav_summary:'Tableau de bord', nav_habits:'Objectifs',
     nav_saisie:'Saisie', nav_hist:'Historique', nav_stats:'Statistiques', nav_options:'Options',
+    nav_regression:'Régression',
     display_card:'Affichage', lbl_theme:'Thème', lbl_lang:'Langue',
+    // --- Régression linéaire multiple ---
+    reg_section:'Régression linéaire multiple',
+    reg_intro:"La forme du jour est mise en régression sur toutes tes variables à la fois. Contrairement aux corrélations, qui regardent une variable isolée, chaque poids ci-dessous est estimé les autres variables tenues constantes : il montre l'apport propre de la variable. Seules celles avec au moins 10 paires sont retenues.",
+    reg_none:'Pas encore assez de données pour une régression. Encode au moins une dizaine de nuits avec leur forme.',
+    reg_r2_label:'de la variation de ta forme est expliquée par ces variables ensemble.',
+    reg_nobs: n => `sur ${n} jour${n>1?'s':''} avec une forme`,
+    reg_table_title:'Poids de chaque variable',
+    reg_beta_help:"Poids standardisé (β) : signe = sens de l'effet, longueur de la barre = force relative. Comparable d'une variable à l'autre. r = la corrélation simple, pour repère.",
+    reg_col_var:'Variable', reg_col_beta:'Poids (β)', reg_col_r:'Corr. simple',
+    reg_excluded:'Variables écartées (moins de 10 paires)',
+    reg_cav_ridge:'Certaines variables se ressemblent beaucoup (les moyennes glissantes surtout) : les poids ont été stabilisés et se partagent alors leur effet — à lire avec prudence.',
+    reg_cav_sample:'Sur peu de nuits, ces poids restent indicatifs.',
+    reg_cav_cause:'Un lien statistique ne prouve pas une cause.',
     // --- Tableau de bord (mascotte, cartes) ---
     d_today:'Aujourd\'hui', d_yesterday:'Hier', d_before:'Avant-hier', d_before2:'Avant-avant-hier',
     sec_now:'Situation actuelle', sec_3d:'3 derniers jours', sec_analysis:'Analyse de tes données',
@@ -135,7 +149,21 @@ const S = {
   en: {
     nav_summary:'Dashboard', nav_habits:'Goals',
     nav_saisie:'Entry', nav_hist:'History', nav_stats:'Statistics', nav_options:'Settings',
+    nav_regression:'Regression',
     display_card:'Display', lbl_theme:'Theme', lbl_lang:'Language',
+    // --- Multiple linear regression ---
+    reg_section:'Multiple linear regression',
+    reg_intro:"Your day form is regressed on all your variables at once. Unlike the correlations, which look at one variable in isolation, each weight below is estimated with the other variables held constant: it shows the variable's own contribution. Only those with at least 10 pairs are kept.",
+    reg_none:'Not enough data yet for a regression. Record at least a dozen nights with their form.',
+    reg_r2_label:'of the variation in your form is explained by these variables together.',
+    reg_nobs: n => `over ${n} day${n>1?'s':''} with a form`,
+    reg_table_title:'Weight of each variable',
+    reg_beta_help:'Standardised weight (β): sign = direction of the effect, bar length = relative strength. Comparable across variables. r = the plain correlation, for reference.',
+    reg_col_var:'Variable', reg_col_beta:'Weight (β)', reg_col_r:'Plain corr.',
+    reg_excluded:'Variables set aside (fewer than 10 pairs)',
+    reg_cav_ridge:'Some variables closely resemble one another (the rolling averages especially): the weights were stabilised and then share their effect — read with care.',
+    reg_cav_sample:'Over few nights, these weights stay indicative.',
+    reg_cav_cause:'A statistical link is not proof of a cause.',
     // --- Dashboard (mascot, cards) ---
     d_today:'Today', d_yesterday:'Yesterday', d_before:'Two days ago', d_before2:'Three days ago',
     sec_now:'Current situation', sec_3d:'Last 3 days', sec_analysis:'Your data analysed',
@@ -271,6 +299,7 @@ function applyLang() {
     // Labels have their own span: writing on the link itself would wipe the icon.
     'nav-lbl-summary':'nav_summary','nav-lbl-habits':'nav_habits','nav-lbl-entry':'nav_saisie',
     'nav-lbl-history':'nav_hist','nav-lbl-statistics':'nav_stats','nav-lbl-options':'nav_options',
+    'nav-lbl-regression':'nav_regression',
     'lbl-display-card':'display_card','lbl-theme':'lbl_theme','lbl-lang':'lbl_lang',
     'lbl-date-card':'date_card','lbl-nuit-du':'nuit_du',
     'mode-btn-quick':'mode_quick','mode-btn-detailed':'mode_detailed',

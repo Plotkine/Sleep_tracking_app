@@ -48,7 +48,7 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def do_GET(self):
-        if self.path in ('/', '/summary', '/entry', '/history', '/habits', '/statistics', '/options'):
+        if self.path in ('/', '/summary', '/entry', '/history', '/habits', '/statistics', '/regression', '/options'):
             self._respond(200, 'text/html; charset=utf-8', HTML_FILE.read_bytes())
         elif self._serve_static():
             pass

@@ -1,4 +1,4 @@
-const TABS = ['summary','entry','history','statistics','habits','options'];
+const TABS = ['summary','entry','history','statistics','regression','habits','options'];
 
 // Deux modes de navigation :
 //   · served by sleep_server.py → real URLs (/summary…), which the server can render;
@@ -17,6 +17,7 @@ function showTab(name, push=true) {
   if (name==='summary')    renderSummary();
   if (name==='history')    renderHistory();
   if (name==='statistics') renderStats();
+  if (name==='regression') renderRegression();
   // Every tab starts at the top: on mobile you would otherwise land mid-content.
   window.scrollTo(0, 0);
 }
