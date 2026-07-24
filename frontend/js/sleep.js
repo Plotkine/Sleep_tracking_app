@@ -15,11 +15,13 @@ function sleepOnsetH(e) {
 // clock time.
 function clockSep() { return lang === 'en' ? ':' : 'h'; }
 
-// A clock time from its two parts. On the hour the minutes are dropped in French —
-// "00h" says exactly what "00h00" said, with less noise. English keeps "00:00": a bare
-// "00" would not read as a time of day. Durations follow the same rule in fmtH.
+// A clock time from its two parts. Two French conventions, neither applied in English:
+//  · a single-digit hour keeps its single digit — "8h30", not "08h30" (as durations do);
+//  · on the hour the minutes are dropped — "0h", not "0h00".
+// English keeps the padded 24 h form "08:30" / "00:00": a bare "8" or "00" would not
+// read as a time of day, and the leading zero is idiomatic there.
 function fmtClockParts(h, m) {
-  const hh = String(h).padStart(2,'0');
+  const hh = lang === 'en' ? String(h).padStart(2,'0') : String(h);
   if (m === 0) return lang === 'en' ? `${hh}:00` : `${hh}h`;
   return `${hh}${clockSep()}${String(m).padStart(2,'0')}`;
 }

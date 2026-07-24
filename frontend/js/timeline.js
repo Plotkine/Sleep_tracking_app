@@ -21,11 +21,14 @@ function periodStamps(periods, pct) {
   if (!periods.length) return '';
   const EPS = 1e-6;
   const merged = [];
+  // Only touching night blocks are merged (sleep then half-sleep sharing an instant):
+  // then a single period is stamped at its outer bounds. A nap never merges — it always
+  // stands as its own period, so it keeps its nap flag and is stamped with its start
+  // alone, even when it happens to abut a sleep block.
   [...periods].sort((a, b) => a.s - b.s).forEach(p => {
     const last = merged[merged.length - 1];
-    if (last && p.s <= last.e + EPS) {
+    if (last && !last.isNap && !p.isNap && p.s <= last.e + EPS) {
       if (p.e > last.e) { last.e = p.e; last.endT = p.endT; }
-      last.isNap = last.isNap && p.isNap;
     } else merged.push({ ...p });
   });
   const stamp = (f, txt) => `<div style="position:absolute;left:${pct(f)};top:0;transform:translateX(-50%);` +

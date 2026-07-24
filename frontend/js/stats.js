@@ -260,8 +260,11 @@ function renderStats() {
       ? `<span style="color:${ratioColor(avg)}">${Math.round(avg*100)}%</span>` : '–'; }
 
   // Largeur nécessaire pour que deux points restent lisibles. En dessous, le
-  // conteneur défile horizontalement au lieu de comprimer l'axe.
-  const MIN_PX_PER_POINT = 46;
+  // conteneur défile horizontalement au lieu de comprimer l'axe. 32 px : la plus petite
+  // valeur qui laisse les étiquettes de valeur (les plus larges, "23h45", 5 caractères)
+  // sans chevauchement même sur trois points serrés d'affilée — mesuré au rendu. Sous
+  // 32, les grappes "22h15 22h15 22h15" se touchent.
+  const MIN_PX_PER_POINT = 32;
   function sizeChartArea(wrapId) {
     const wrap = document.getElementById(wrapId);
     const inner = wrap && wrap.querySelector('.chart-inner');
